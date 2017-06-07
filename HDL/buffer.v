@@ -132,6 +132,15 @@ module buffer
         end
     end
 
+    always@(*) begin
+        if(tail >= head) begin
+            usedw = tail - head;
+        end
+        else begin
+            usedw = buffer_depth - head + tail;
+        end
+    end
+
 `endif
 
 endmodule

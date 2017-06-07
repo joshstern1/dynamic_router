@@ -1,5 +1,8 @@
 //input unit for dynamic router
 //packet format
+//|        |        |         |             |
+//|  TYPE  |   DST  |  CHECK  |   PAYLOAD   |
+//|        |        |         |             |
 //
 `include "para.v"
 module input_unit
@@ -21,6 +24,9 @@ module input_unit
     wire inQ_full;
     wire inQ_empty;
 
+    wire [DSTW-1:0] dst;
+
+
 
     //input queue
     buffer#(
@@ -39,10 +45,12 @@ module input_unit
     );
 
     //route computation unit
+    
+    
 
 
 
-    //input virtual channel
+    //input virtual channels
     //
 
 
