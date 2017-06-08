@@ -17,37 +17,72 @@ module VC
     output [FLIT_SIZE-1:0] flit_out,
       
 );
-//VC states list
-    parameter IDLE    = 3'd0;
-    parameter ROUTING = 3'd1;
-    parameter WATING  = 3'd2;
-    parameter ACTIVE  = 3'd3;
-    parameter CREDITS = 3'd4;
-
-    always@(posedge clk) begin
-        if(rst) begin
-            G<=IDLE;
-        end
-        else begin
-            case(G)
-                IDLE: begin
-                    if P
-                end
-            endcase
-        end
-    end
 
 
-    wire is_head;
-
-    assign is_head = valid_in && (flit_in[FLIT_SIZE - 1 : FLIT_SIZE - 2] == HEAD_FLIT); 
 
     wire buffer_produce;
     wire buffer_consume;
     wire buffer_full;
     wire buffer_empty;
     wire [buffer_width - 1 : 0] buffer_usedw;
+    
+    wire is_head;
 
+
+
+
+//VC states list
+    parameter IDLE                = 3'd0;
+    parameter ROUTING             = 3'd1;
+    parameter WATING_FOR_OVC      = 3'd2;
+    parameter ACTIVE              = 3'd3;
+    parameter WAITING_FOR_CREDITS = 3'd4;
+
+    always@(posedge clk) begin
+        if(rst) begin
+            G <= IDLE;
+        end
+        else begin
+            case(G)
+                IDLE: begin
+                    if(valid_in) begin  
+                        if(~ buffer_full) begin
+                            if(is_head) begin
+                                G <= WAITING_FOR_OVC;
+                            end
+                            else begin
+                                G <= ACTIVE;
+                            end
+                        end
+                        else begin
+                            G <= WAITING_FOR_CREDITS;
+                        end
+                    end
+                    else begin
+                        G <= IDLE;
+                    end
+                end
+                ACTIVE: begin
+                    if(valid_in) begin
+                        if(~ buffer_full) begin
+                            G <= ACTIVE;
+                        end
+                        else begin
+                            G <= WAITING_FOR_CREDITS;
+                        end
+                    end
+                    else begin
+                        
+                    end
+
+                    
+                end
+            endcase
+        end
+    end
+
+
+    assign is_head = valid_in && (flit_in[FLIT_SIZE - 1 : FLIT_SIZE - 2] == HEAD_FLIT); 
     buffer#(
         .buffer_depth(FLIT_SIZE),
         .buffer_width(VC_SIZE),
