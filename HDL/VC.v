@@ -5,7 +5,7 @@ module VC
     input rst,
     
     output reg [2:0] G, //Global: state Either idle (I), routing (R), waiting for an output VC (V), active (A), or waiting for credits (C).
-    output reg [2:0] R, //Route: After routing is completed for a packet, this field holds the output port selected for the packet.
+    output [2:0] R, //Route: After routing is completed for a packet, this field holds the output port selected for the packet.
     output reg [3:0] O, //Output VC: After virtual-channel allocation is completed for a packet, this field holds the output virtual channel of port R assigned to the packet.
     output reg [buffer_width - 1:0] P, //the number of the empty slots in VC
     input [2:0] C,       //Credit count: The number of credits (available downstream flit buffers) for output virtual channel O on output port R.
@@ -14,8 +14,9 @@ module VC
     input valid_in,
     input [2:0] route_in, //the output port number of current flit_in
     
+    input grant, //granted by OVC, the last flit in the VC is allowed to exit from the VC
     output [FLIT_SIZE-1:0] flit_out,
-      
+    
 );
 
 
@@ -26,7 +27,12 @@ module VC
     wire buffer_empty;
     wire [buffer_width - 1 : 0] buffer_usedw;
     
-    wire is_head;
+    wire in_is_head;
+
+    wire out_is_head;
+
+    wire out_is_tail;
+
 
 
 
@@ -44,10 +50,10 @@ module VC
         end
         else begin
             case(G)
-                IDLE: begin
+                IDLE: begin  //empty buffer 
                     if(valid_in) begin  
                         if(~ buffer_full) begin
-                            if(is_head) begin
+                            if(in_is_head) begin
                                 G <= WAITING_FOR_OVC;
                             end
                             else begin
@@ -62,45 +68,95 @@ module VC
                         G <= IDLE;
                     end
                 end
-                ACTIVE: begin
-                    if(valid_in) begin
-                        if(~ buffer_full) begin
-                            G <= ACTIVE;
+                ACTIVE: begin  // the buffer is not empty and the flit_out has a granted OVC
+                    if(C >= 1) begin
+                        if(buffer_usedw == 1) begin
+                            if(in_is_head) begin
+                                G <= WAITING_FOR_OVC;
+                            end
+                            else if(in_valid) begin
+                                G <= ACTIVE;
+                            end
+                            else begin
+                                G <= IDLE:
+                            end
                         end
-                        else begin
-                            G <= WAITING_FOR_CREDITS;
+                        else begin //there are at least 2 flits in the VC
+                            if(out_is_tail) begin // the next flit will be a head flit
+                                G <= WAITING_FOR_OVC;
+                            end
+                            else begin
+                                G <= ACTIVE;
+                            end
                         end
+                    else begin
+                        G <= ACTIVE:
+                    end
+                end
+                WAITING_FOR_OVC: begin
+                    if(grant) begin
+                        G <= ACTIVE;
                     end
                     else begin
-                        
+                        G <= WAITING_FOR_OVC;
                     end
-
-                    
+                end
+                default begin
+                    G <= G;
                 end
             endcase
         end
     end
 
 
-    assign is_head = valid_in && (flit_in[FLIT_SIZE - 1 : FLIT_SIZE - 2] == HEAD_FLIT); 
+    always@(posedge clk) begin
+        if(rst) begin
+            O <= 4'hf; //f means no granted OVC
+        end
+        else begin
+            if(state == WAITING_FOR_OVC && grant) begin
+                O <= {1'b1, R};
+            end
+        end
+    end
+
+                
+
+
+
+            
+
+    assign in_is_head = valid_in && (flit_in[FLIT_SIZE - 1 : FLIT_SIZE - 2] == HEAD_FLIT); 
+
+    assign out_is_head = (~ buffer_empty) && (flit_out[FLIT_SIZE - 1 : FLIT_SIZE - 2] == HEAD_FLIT);
+
+    assign out_is_tail = (~ buffer_empty) && (flit_out[FLIT_SIZE - 1 : FLIT_SIZE - 2] == TAIL_FLIT);
+
     buffer#(
-        .buffer_depth(FLIT_SIZE),
+        .buffer_depth(FLIT_SIZE + 3),
         .buffer_width(VC_SIZE),
     )VC_buffer(
         .clk        (clk),
         .rst        (rst),
-        .in         (flit_in),
+        .in         ({route_in, flit_in}),
         .produce    (buffer_produce),
         .consume    (buffer_consume),
         .full       (buffer_full),
         .empty      (buffer_empty),
-        .out        (flit_out),
+        .out        ({R, flit_out}),
         .usedw      (buffer_usedw)
     );
 
+    assign buffer_consume = (state == ACTIVE) && (C >=1);
+
+    assign buffer_produce = in_valid;
+
+
     assign P = VC_SIZE - 1 - buffer_usedw;
+    
+    
 
-
+    
 endmodule
 
 
