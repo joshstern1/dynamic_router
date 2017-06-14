@@ -23,3 +23,6 @@ parameter BODY_FLIT=2'01;
 parameter TAIL_FLIT=2'10;
 parameter CREDIT_FLIT=2'11;
 
+parameter PORT_NUM = 7;
+ 
+
