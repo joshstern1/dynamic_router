@@ -18,12 +18,15 @@ parameter DIR_XNEG=3'd4;
 parameter DIR_YNEG=3'd5;
 parameter DIR_ZNEG=3'd6;
 parameter DIR_EJECT=3'd7;
+parameter HEADER_LEN=3;
 parameter HEAD_FLIT=3'b000;
 parameter BODY_FLIT=3'b001;
 parameter TAIL_FLIT=3'b010;
 parameter SINGLE_FLIT_PACKET=3'b011;
 parameter CREDIT_FLIT=3'b100;
 
+
+parameter VC_CLASS_POS=FLIT_SIZE - HEADER_FLIT - 1;
 parameter PORT_NUM = 7;
  
 

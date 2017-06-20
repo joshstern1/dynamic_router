@@ -1,4 +1,10 @@
 `include "para.v"
+
+
+//the packet format:
+//head flit   |type|VC class|dst|payload| 
+//body flits  |type|             payload|
+//tail flit   |type|             payload|
 module route_comp
 #(
 )(
@@ -6,6 +12,7 @@ module route_comp
     input rst,
     input [FLIT_SIZE - 1 : 0] flit_before_RC, 
     input stall,
+    input [2 : 0] dir_in,
     input [XW - 1 : 0] dst_x,
     input [YW - 1 : 0] dst_y,
     input [ZW - 1 : 0] dst_z,
@@ -18,12 +25,97 @@ module route_comp
 
     reg [2:0] dir;
 
+    reg new_VC_class; 
+    wire old_VC_class;
+
+    reg turn;
+
+
+    assign old_VC_class = flit_before_RC[FLIT_SIZE -  HEADER_LEN];
+
+    //the VC_class needs to be changed when either crossing the dateline or changing dimension
+
+    always@(*) begin
+        if(dir_in != dir_out + 3 && dir_out != dir_in + 3) begin
+            if(dir_out == DIR_XPOS || dir_out == DIR_YPOS || dir_out == DIR_ZPOS) begin
+                new_VC_class = 0;
+            end
+            else begin 
+                new_VC_class = 1;
+            end
+        end
+        else begin 
+            case(dir_out)
+                DIR_XPOS: begin
+                    if(cur_x == 0) begin
+                        new_VC_class = 1;
+                    end
+                    else begin
+                        new_VC_class = old_VC_class;
+                    end
+                end
+                CIR_XNEG: begin
+                    if(cur_x == XSIZE - 1) begin
+                        new_VC_class = 0;
+                    end
+                    else begin
+                        new_VC_class = old_VC_class;
+                    end
+                
+                end
+                DIR_YPOS: begin
+                    if(cur_y == 0) begin
+                        new_VC_class = 1;
+                    end
+                    else begin
+                        new_VC_class = old_VC_class;
+                    end
+                end
+                CIR_YNEG: begin
+                    if(cur_y == YSIZE - 1) begin
+                        new_VC_class = 0;
+                    end
+                    else begin
+                        new_VC_class = old_VC_class;
+                    end
+                
+                end
+                DIR_ZPOS: begin
+                    if(cur_z == 0) begin
+                        new_VC_class = 1;
+                    end
+                    else begin
+                        new_VC_class = old_VC_class;
+                    end
+                end
+                CIR_ZNEG: begin
+                    if(cur_z == ZSIZE - 1) begin
+                        new_VC_class = 0;
+                    end
+                    else begin
+                        new_VC_class = old_VC_class;
+                    end
+                
+                end
+                default:
+                    new_VC_class = old_VC_class;
+
+
+                
+            endcase
+        end
+    end
+
+
+    
+
     always@(posedge clk) begin
         if(rst) begin
             dir_out<=0;
         end
-        else if(flit_before_RC[FLIT_SIZE -1 : FLIT_SIZE - 2] == HEAD_FLIT && ~stall) begin
-            flit_after_RC <= flit_before_RC;
+        else if(~ stall) begin
+            flit_after_RC <= {flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN],new_VC_class,flit_before_RC[FLIT_SIZE - HEADER_LEN - 1  : 0]};
+            if((flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) || (flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == SINGLE_FLIT))begin
             dir_out<=dir;
         end
     end
