@@ -15,7 +15,7 @@ module VC
     input valid_in,
     input [2:0] route_in, //the output port number of current flit_in
     
-    input grant, //granted by OVC, the last flit in the VC is allowed to exit from the VC
+    input grant, //granted by switch, the last flit in the VC is allowed to exit from the VC
     output [FLIT_SIZE-1:0] flit_out,
     
 );
