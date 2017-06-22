@@ -28,5 +28,8 @@ parameter CREDIT_FLIT=3'b100;
 
 parameter VC_CLASS_POS=FLIT_SIZE - HEADER_FLIT - 1;
 parameter PORT_NUM = 7;
+parameter DST_POS = VC_CLASS_POS - 1;
+parameter CMP_POS = DST_POS - XW - YW - ZW;
+parameter CMP_LEN = 4;
  
 

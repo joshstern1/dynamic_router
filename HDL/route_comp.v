@@ -2,9 +2,13 @@
 
 
 //the packet format:
-//head flit   |type|VC class|dst|payload| 
-//body flits  |type|             payload|
-//tail flit   |type|             payload|
+//head flit   |type|VC class|dst|cmp|payload| 
+//body flits  |type|                 payload|
+//tail flit   |type|                 payload|
+//
+//the |cmp| field will be the priority field for the switch allocation
+//if the SA policy is farthest first, this will be the distance from the destination node to the current node, if the SA policy is the oldest first, this will be the time stamp when this packet is sent
+
 module route_comp
 #(
 )(
