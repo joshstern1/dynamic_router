@@ -1,0 +1,35 @@
+parameter FLIT_SIZE=64;
+parameter PHIT_SIZE=256;
+parameter IN_Q_SIZE=512;
+parameter VC_SIZE=4;
+parameter VC_NUM=8;
+parameter XSIZE=4'd8;  //the number of nodes in x dimension
+parameter YSIZE=4'd8;  //the number of nodes in y dimension
+parameter ZSIZE=4'd8;  //the number of nodes in z dimension
+parameter XW=3;   //the width of the x coordinates
+parameter YW=3;   //the width of the y coordinates
+parameter ZW=3;   //the width of the z coordinates
+parameter DSTW=9; //the width of the destination field
+parameter DIR_INJECT=3'd0;
+parameter DIR_XPOS=3'd1;
+parameter DIR_YPOS=3'd2;
+parameter DIR_ZPOS=3'd3;
+parameter DIR_XNEG=3'd4;
+parameter DIR_YNEG=3'd5;
+parameter DIR_ZNEG=3'd6;
+parameter DIR_EJECT=3'd7;
+parameter HEADER_LEN=3;
+parameter HEAD_FLIT=3'b000;
+parameter BODY_FLIT=3'b001;
+parameter TAIL_FLIT=3'b010;
+parameter SINGLE_FLIT_PACKET=3'b011;
+parameter CREDIT_FLIT=3'b100;
+
+
+parameter VC_CLASS_POS=FLIT_SIZE - HEADER_FLIT - 1;
+parameter PORT_NUM = 7;
+parameter DST_POS = VC_CLASS_POS - 1;
+parameter CMP_POS = DST_POS - XW - YW - ZW;
+parameter CMP_LEN = 4;
+ 
+

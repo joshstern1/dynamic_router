@@ -1,11 +1,11 @@
-`include "para.v"
+
 parameter N = 8;
 module N_to_1_reductor(
     input clk,
     input rst,
     input [FLIT_SIZE * N - 1 : 0] in,
     input [N - 1 : 0] in_valid,
-    output out_avail,
+    input out_avail,
     output reg [N - 1 : 0] in_avail,
     output [FLIT_SIZE - 1 : 0] out,
     output out_valid
@@ -22,8 +22,8 @@ module N_to_1_reductor(
     genvar i;
 
     generate 
-        for(i = 0; i < N; i = i + 1) begin
-            assign slot_is_head[i] = (in_slot[i][FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) || (in_slot[i][FLIT_SIZE - 1 : FLIT_SIEZ - HEADER_LEN] == SINGLE_FLIT);
+        for(i = 0; i < N; i = i + 1) begin: head_detect
+            assign slot_is_head[i] = (in_slot[i][FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) || (in_slot[i][FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == SINGLE_FLIT);
         end
     endgenerate
 
@@ -39,14 +39,14 @@ module N_to_1_reductor(
     end
 
     generate 
-    for(i = 0; i < N; i = i + 1) begin
+    for(i = 0; i < N; i = i + 1) begin: slot_write
         always@(posedge clk) begin
             if(rst) begin
-                in_slot[i] < = 0;
+                in_slot[i] <= 0;
             end
             else begin
                 if(in_avail[i]) begin
-                    in_slot[i] <= in[FLIT_SIZE * i + FLIT_SIEZ - 1: FLIT_SIZE * i];
+                    in_slot[i] <= in[FLIT_SIZE * i + FLIT_SIZE - 1: FLIT_SIZE * i];
                     slot_valid[i] <= in_valid[i];
                 end
             end
@@ -54,6 +54,26 @@ module N_to_1_reductor(
     end
     endgenerate
 
+
+    wire[CMP_LEN - 1 : 0] max;
+    integer index = 0;
+	 
+	 reg [N - 1 : 0] pre_sel;
+	 
+	 always@(posedge clk) begin
+	     pre_sel <= selector;
+	 end
+
+    always_comb begin
+        max = in_slot[0][CMP_POS : CMP_POS - CMP_LEN + 1];
+        selector = 0; 
+        for(index = 0; index < N; index = index + 1) begin
+            if(in_slot[index][CMP_POS : CMP_POS - CMP_LEN + 1] > max && slot_is_head[index]) begin
+                selector = index;
+                max = in_slot[index][CMP_POS : CMP_POS - CMP_LEN + 1];
+            end
+        end
+    end
 
 
 endmodule

@@ -82,14 +82,6 @@ module binary_reductor#(
         pre_sel <= selector;
     end
 
-    wire slot0_valid_header;
-    wire slot1_valid_header;
-
-    assign slot0_valid_header = slot0_valid && slot0_is_header;
-    assign slot1_valid_header = slot1_valid && slot1_is_header;
-
-
-
 
     always@(*) begin
         if(slot0_valid && ~slot1_valid) begin
