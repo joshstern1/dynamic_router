@@ -60,20 +60,33 @@ module N_to_1_reductor(
 	 
 	 reg [N - 1 : 0] pre_sel;
 	 
+
+     reg occupy;
+
 	 always@(posedge clk) begin
 	     pre_sel <= selector;
 	 end
+
+    always@(posedge clk) begin
+        if(out_valid && ((out[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) || (out[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == BODY_FLIT))) begin
+            occupy <= 1;
+        end
+        else begin
+            occupy <= 0;
+        end
+
+    end
 
     always_comb begin
         max = in_slot[0][CMP_POS : CMP_POS - CMP_LEN + 1];
         selector = 0; 
         for(index = 0; index < N; index = index + 1) begin
-            if(in_slot[index][CMP_POS : CMP_POS - CMP_LEN + 1] > max && slot_is_head[index]) begin
+            if(in_slot[index][CMP_POS : CMP_POS - CMP_LEN + 1] > max && slot_is_head[index] && ~occupy) begin
                 selector = index;
                 max = in_slot[index][CMP_POS : CMP_POS - CMP_LEN + 1];
             end
         end
     end
 
-
+    
 endmodule
