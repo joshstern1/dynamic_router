@@ -1,6 +1,7 @@
 
-parameter N = 8;
-module N_to_1_reductor(
+module N_to_1_reductor#(
+    parameter N = 6
+)(
     input clk,
     input rst,
     input [FLIT_SIZE * N - 1 : 0] in,

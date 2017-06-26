@@ -515,15 +515,6 @@ module VC_allocator#(
         end
     end
 
-
-
-
-
-
-
-
-    
-
     
     assign stall_xpos = VA_stall_xpos || ((full_xpos & grant_xpos) != 0);
     assign stall_ypos = VA_stall_ypos || ((full_ypos & grant_ypos) != 0);

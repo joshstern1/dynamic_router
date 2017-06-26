@@ -5,7 +5,7 @@ module VC
     input rst,
     
     output reg [2:0] G, //Global: state Either idle (I), routing (R), waiting for an output VC (V), active (A), or waiting for credits (C).
-    output [2:0] R, //Route: After routing is completed for a packet, this field holds the output port selected for the packet.
+    output [ROUTE_LEN - 1 : 0] R, //Route: After routing is completed for a packet, this field holds the output port selected for the packet.
     output reg [3:0] O, //Output VC: After virtual-channel allocation is completed for a packet, this field holds the output virtual channel of port R assigned to the packet.
     output reg [buffer_width - 1:0] P, //the number of the empty slots in VC
     output vc_full,
@@ -13,7 +13,7 @@ module VC
     
     input [FLIT_SIZE-1:0] flit_in,
     input valid_in,
-    input [2:0] route_in, //the output port number of current flit_in
+    input [ROUTE_LEN - 1 : 0] route_in, //the output port number of current flit_in
     
     input grant, //granted by switch, the last flit in the VC is allowed to exit from the VC
     output [FLIT_SIZE-1:0] flit_out,
@@ -147,7 +147,7 @@ module VC
  
 
     buffer#(
-        .buffer_depth(FLIT_SIZE + 3),
+        .buffer_depth(FLIT_SIZE + ROUTE_LEN),
         .buffer_width(VC_SIZE),
     )VC_buffer(
         .clk        (clk),
