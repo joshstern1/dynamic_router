@@ -11,22 +11,25 @@
 
 module route_comp
 #(
+    parameter cur_x = 0,
+    parameter cur_y = 0,
+    parameter cur_z = 0
 )(
     input clk,
     input rst,
+    input flit_valid_in,
     input [FLIT_SIZE - 1 : 0] flit_before_RC, 
     input stall,
     input [2 : 0] dir_in,
-    input [XW - 1 : 0] dst_x,
-    input [YW - 1 : 0] dst_y,
-    input [ZW - 1 : 0] dst_z,
-    input [XW - 1 : 0] cur_x,
-    input [YW - 1 : 0] cur_y,
-    input [ZW - 1 : 0] cur_z,
     output reg [FLIT_SIZE - 1 : 0] flit_after_RC,
+    output flit_valid_out,
     output reg [2 : 0] dir_out //this is going to hold until next head
 );
 
+
+    wire [XW - 1 : 0] dst_x;
+    wire [YW - 1 : 0] dst_y;
+    wire [ZW - 1 : 0] dst_z;
     reg [2:0] dir;
 
     reg new_VC_class; 
@@ -35,7 +38,11 @@ module route_comp
     reg turn;
 
 
-    assign old_VC_class = flit_before_RC[FLIT_SIZE -  HEADER_LEN];
+    assign dst_z = flit_before_RC[DST_ZPOS : DST_ZPOS - ZW + 1];
+    assign dst_y = flit_before_RC[DST_YPOS : DST_YPOS - YW + 1];
+    assign dst_x = flit_before_RC[DST_XPOS : DST_XPOS - XW + 1];
+
+    assign old_VC_class = flit_before_RC[VC_CLASS_POS];
 
     //the VC_class needs to be changed when either crossing the dateline or changing dimension
 

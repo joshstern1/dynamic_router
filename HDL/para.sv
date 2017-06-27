@@ -19,6 +19,7 @@ parameter DIR_YNEG=3'd5;
 parameter DIR_ZNEG=3'd6;
 parameter DIR_EJECT=3'd7;
 parameter HEADER_LEN=3;
+parameter ROUTE_LEN = 3;
 parameter HEAD_FLIT=3'b000;
 parameter BODY_FLIT=3'b001;
 parameter TAIL_FLIT=3'b010;
@@ -28,7 +29,9 @@ parameter CREDIT_FLIT=3'b100;
 
 parameter VC_CLASS_POS=FLIT_SIZE - HEADER_LEN - 1;
 parameter PORT_NUM = 7;
-parameter DST_POS = VC_CLASS_POS - 1;
+parameter DST_ZPOS = VC_CLASS_POS - 1;
+parameter DST_YPOS = DST_XPOS - ZW;
+parameter DST_XPOS = DST_YPOS - YW;
 parameter CMP_POS = DST_POS - XW - YW - ZW;
 parameter CMP_LEN = 4;
  
