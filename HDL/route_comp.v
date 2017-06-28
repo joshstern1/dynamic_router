@@ -23,7 +23,8 @@ module route_comp
     input [2 : 0] dir_in,
     output reg [FLIT_SIZE - 1 : 0] flit_after_RC,
     output flit_valid_out,
-    output reg [2 : 0] dir_out //this is going to hold until next head
+    output reg [2 : 0] dir_out, //this is going to hold until next head
+    output eject_enable
 );
 
 
@@ -37,6 +38,11 @@ module route_comp
 
     reg turn;
 
+    reg flit_out_tmp;
+    reg ejecting;
+
+
+    assign eject_enable = ejecting;
 
     assign dst_z = flit_before_RC[DST_ZPOS : DST_ZPOS - ZW + 1];
     assign dst_y = flit_before_RC[DST_YPOS : DST_YPOS - YW + 1];
@@ -117,6 +123,35 @@ module route_comp
         end
     end
 
+    always@(posedge clk) begin
+        if(rst) begin 
+            ejecting <= 0;
+        end
+        else begin
+            if(flit_valid_in && ((flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) || (flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == SINGLE_FLIT)) && dir == DIR_EJECT) begin
+                ejecting <= 1;
+            end
+            else begin
+                if(ejecting) begin
+                    if(flit_valid_in && ((flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) || (flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == SINGLE_FLIT)) && dir != DIR_EJECT) begin
+                        ejecting <= 0;
+                    end
+                end
+            end
+        end
+    end
+
+    reg flit_valid_in_reg;
+
+    always@(posedge clk) begin
+        if(~stall) begin
+            flit_valid_in_reg <= flit_valid_in;
+        end
+    end
+
+    assign flit_valid_out = flit_valid_in_reg && ~ejecting;
+
+
 
     
 
@@ -124,12 +159,22 @@ module route_comp
         if(rst) begin
             dir_out<=0;
         end
-        else if(~ stall) begin
-            flit_after_RC <= {flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN],new_VC_class,flit_before_RC[FLIT_SIZE - HEADER_LEN - 1  : 0]};
-            if((flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) || (flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == SINGLE_FLIT))begin
-            dir_out<=dir;
+        else if(~ejecting) begin
+            if(~ stall) begin
+                flit_after_RC <= {flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN], new_VC_class, flit_before_RC[FLIT_SIZE - HEADER_LEN - 1  : 0]};
+                if((flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) || (flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == SINGLE_FLIT))begin
+                    dir_out<=dir;
+                end
+            end
+        end
+        else begin //dir equals to eject port
+            flit_after_RC <= {flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN], new_VC_class, flit_before_RC[FLIT_SIZE - HEADER_LEN - 1  : 0]};
+            dir_out <= DIR_EJECT;
         end
     end
+
+
+
 
     //for simplicity start with xyz routing first
     always@(*) begin
@@ -188,7 +233,7 @@ module route_comp
             end
         end
         else begin
-            dir = DIR_INJECT;
+            dir = DIR_EJECT;
         end
     end
 endmodule

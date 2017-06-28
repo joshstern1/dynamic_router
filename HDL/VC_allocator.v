@@ -8,12 +8,12 @@ module VC_allocator#(
 (
     input clk,
     input rst,
-    input [VC_NUM - 1 : 0] full_xpos, // the full signal for xpos 
-    input [VC_NUM - 1 : 0] full_ypos, // the full signal for ypos
-    input [VC_NUM - 1 : 0] full_zpos, // the full signal for zpos
-    input [VC_NUM - 1 : 0] full_xneg, // the full signal for xneg
-    input [VC_NUM - 1 : 0] full_yneg, // the full signal for yneg
-    input [VC_NUM - 1 : 0] full_zneg, // the full signal for zneg
+    input [VC_NUM - 1 : 0] full_xpos, // the full signal for xpos VCs
+    input [VC_NUM - 1 : 0] full_ypos, // the full signal for ypos VCs
+    input [VC_NUM - 1 : 0] full_zpos, // the full signal for zpos VCs
+    input [VC_NUM - 1 : 0] full_xneg, // the full signal for xneg VCs
+    input [VC_NUM - 1 : 0] full_yneg, // the full signal for yneg VCs
+    input [VC_NUM - 1 : 0] full_zneg, // the full signal for zneg VCs
     input [VC_NUM - 1 : 0] idle_xpos,
     input [VC_NUM - 1 : 0] idle_ypos,
     input [VC_NUM - 1 : 0] idle_zpos,
@@ -21,7 +21,13 @@ module VC_allocator#(
     input [VC_NUM - 1 : 0] idle_yneg,
     input [VC_NUM - 1 : 0] idle_zneg,
     input [PORT_NUM - 1 : 0] port_valid, //xpos 0th bit, ypos 1st bit, zpos 2nd bit, xneg 3rd bit, yneg 4th bit, zneg 5th bit
-    input [2 : 0] route_in,
+    input [ROUTE_LEN - 1 : 0] route_in_xpos,
+    input [ROUTE_LEN - 1 : 0] route_in_ypos,
+    input [ROUTE_LEN - 1 : 0] route_in_zpos,
+    input [ROUTE_LEN - 1 : 0] route_in_xneg,
+    input [ROUTE_LEN - 1 : 0] route_in_yneg,
+    input [ROUTE_LEN - 1 : 0] route_in_zneg,
+    
     input [FLIT_SIZE - 1 : 0] flit_xpos,
     input [FLIT_SIZE - 1 : 0] flit_ypos,
     input [FLIT_SIZE - 1 : 0] flit_zpos,
@@ -60,9 +66,9 @@ module VC_allocator#(
 
     always@(*) begin
         if(~VC_class_xpos) begin
-            if(idle_xpos[route_in]) begin
-                stall_xpos = full_xpos[route_in];
-                    grant_xpos = (1 << route_in);
+            if(idle_xpos[route_in_xpos]) begin
+                stall_xpos = full_xpos[route_in_xpos];
+                    grant_xpos = (1 << route_in_xpos);
             end
             else begin
                 stall_xpos = 1;
@@ -70,9 +76,9 @@ module VC_allocator#(
             end
         end
         else begin
-            if(idle_xpos[route_in + VC_NUM / 2]) begin
-                stall_xpos = full_xpos[route_in + VC_NUM / 2];
-                grant_xpos = (1 << (route_in + VC_NUM / 2));
+            if(idle_xpos[route_in_xpos + VC_NUM / 2]) begin
+                stall_xpos = full_xpos[route_in_xpos + VC_NUM / 2];
+                grant_xpos = (1 << (route_in_xpos + VC_NUM / 2));
             end
             else begin
                 stall_xpos = 1;
@@ -84,9 +90,9 @@ module VC_allocator#(
 
     always@(*) begin
         if(~VC_class_ypos) begin
-            if(idle_ypos[route_in]) begin
-                stall_ypos = full_ypos[route_in];
-                grant_ypos = (1 << route_in);
+            if(idle_ypos[route_in_ypos]) begin
+                stall_ypos = full_ypos[route_in_ypos];
+                grant_ypos = (1 << route_in_ypos);
             end
             else begin
                 stall_ypos = 1;
@@ -94,9 +100,9 @@ module VC_allocator#(
             end
         end
         else begin
-            if(idle_ypos[route_in + VC_NUM / 2]) begin
-                stall_ypos = full_ypos[route_in + VC_NUM / 2];
-                grant_ypos = (1 << (route_in + VC_NUM / 2));
+            if(idle_ypos[route_in_ypos + VC_NUM / 2]) begin
+                stall_ypos = full_ypos[route_in_ypos + VC_NUM / 2];
+                grant_ypos = (1 << (route_in_ypos + VC_NUM / 2));
             end
             else begin
                 stall_ypos = 1;
@@ -107,9 +113,9 @@ module VC_allocator#(
 
     always@(*) begin
         if(~VC_class_zpos) begin
-            if(idle_zpos[route_in]) begin
-                stall_zpos = full_zpos[route_in];
-                grant_zpos = (1 << route_in);
+            if(idle_zpos[route_in_zpos]) begin
+                stall_zpos = full_zpos[route_in_zpos];
+                grant_zpos = (1 << route_in_zpos);
             end
             else begin
                 stall_zpos = 1;
@@ -117,9 +123,9 @@ module VC_allocator#(
             end
         end
         else begin
-            if(idle_zpos[route_in + VC_NUM / 2]) begin
-                stall_zpos = full_zpos[route_in + VC_NUM / 2];
-                grant_zpos = (1 << (route_in + VC_NUM / 2));
+            if(idle_zpos[route_in_zpos + VC_NUM / 2]) begin
+                stall_zpos = full_zpos[route_in_zpos + VC_NUM / 2];
+                grant_zpos = (1 << (route_in_zpos + VC_NUM / 2));
             end
             else begin
                 stall_zpos = 1;
@@ -130,9 +136,9 @@ module VC_allocator#(
 
     always@(*) begin
         if(~VC_class_xneg) begin
-            if(idle_xneg[route_in]) begin
-                stall_xneg = full_xneg[route_in];
-                grant_xneg = (1 << route_in);
+            if(idle_xneg[route_in_xneg]) begin
+                stall_xneg = full_xneg[route_in_xneg];
+                grant_xneg = (1 << route_in_xneg);
             end
             else begin
                 stall_xneg = 1;
@@ -140,9 +146,9 @@ module VC_allocator#(
             end
         end
         else begin
-            if(idle_xneg[route_in + VC_NUM / 2]) begin
-                stall_xneg = full_xneg[route_in + VC_NUM / 2];
-                grant_xneg = (1 << (route_in + VC_NUM / 2));
+            if(idle_xneg[route_in_xneg + VC_NUM / 2]) begin
+                stall_xneg = full_xneg[route_in_xneg + VC_NUM / 2];
+                grant_xneg = (1 << (route_in_xneg + VC_NUM / 2));
             end
             else begin
                 stall_xneg = 1;
@@ -153,9 +159,9 @@ module VC_allocator#(
 
     always@(*) begin
         if(~VC_class_yneg) begin
-            if(idle_yneg[route_in]) begin
-                stall_yneg = full_yneg[route_in];
-                grant_yneg = (1 << route_in);
+            if(idle_yneg[route_in_yneg]) begin
+                stall_yneg = full_yneg[route_in_yneg];
+                grant_yneg = (1 << route_in_yneg);
             end
             else begin
                 stall_yneg = 1;
@@ -163,9 +169,9 @@ module VC_allocator#(
             end
         end
         else begin
-            if(idle_yneg[route_in + VC_NUM / 2]) begin
-                stall_yneg = full_yneg[route_in + VC_NUM / 2];
-                grant_yneg = (1 << (route_in + VC_NUM / 2));
+            if(idle_yneg[route_in_yneg + VC_NUM / 2]) begin
+                stall_yneg = full_yneg[route_in_yneg + VC_NUM / 2];
+                grant_yneg = (1 << (route_in_yneg + VC_NUM / 2));
             end
             else begin
                 stall_yneg = 1;
@@ -176,9 +182,9 @@ module VC_allocator#(
 
     always@(*) begin
         if(~VC_class_zneg) begin
-            if(idle_zneg[route_in]) begin
-                stall_zneg = full_zneg[route_in];
-                grant_zneg = (1 << route_in);
+            if(idle_zneg[route_in_zneg]) begin
+                stall_zneg = full_zneg[route_in_zneg];
+                grant_zneg = (1 << route_in_zneg);
             end
             else begin
                 stall_zneg = 1;
@@ -186,9 +192,9 @@ module VC_allocator#(
             end
         end
         else begin
-            if(idle_zneg[route_in + VC_NUM / 2]) begin
-                stall_zneg = full_zneg[route_in + VC_NUM / 2];
-                grant_zneg = (1 << (route_in + VC_NUM / 2));
+            if(idle_zneg[route_in_zneg + VC_NUM / 2]) begin
+                stall_zneg = full_zneg[route_in_zneg + VC_NUM / 2];
+                grant_zneg = (1 << (route_in_zneg + VC_NUM / 2));
             end
             else begin
                 stall_zneg = 1;

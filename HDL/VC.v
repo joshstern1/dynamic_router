@@ -17,6 +17,9 @@ module VC
     
     input grant, //granted by switch, the last flit in the VC is allowed to exit from the VC
     output [FLIT_SIZE-1:0] flit_out,
+    output valid_out,
+
+    output vc_idle
     
 );
 
@@ -47,6 +50,9 @@ module VC
     parameter WATING_FOR_OVC      = 3'd2;
     parameter ACTIVE              = 3'd3;
     parameter WAITING_FOR_CREDITS = 3'd4;
+
+
+    assign vc_idle = (G == IDLE);
 
     always@(posedge clk) begin
         if(rst) begin
@@ -147,8 +153,8 @@ module VC
  
 
     buffer#(
-        .buffer_depth(FLIT_SIZE + ROUTE_LEN),
-        .buffer_width(VC_SIZE),
+        .buffer_width(FLIT_SIZE + ROUTE_LEN),
+        .buffer_depth(VC_SIZE),
     )VC_buffer(
         .clk        (clk),
         .rst        (rst),
@@ -170,6 +176,7 @@ module VC
 
     assign vc_full = buffer_full;
     
+    assign valid_out = ~buffer_empty;
     
 
     
