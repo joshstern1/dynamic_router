@@ -1,4 +1,4 @@
-`include "para.v"
+`include "para.sv"
 `define FARTHEST_FIRST
 module binary_reductor#(
 )(
@@ -46,7 +46,7 @@ module binary_reductor#(
     end
 
     always@(*) begin
-        if(out_avail && (~selector) begin
+        if(out_avail && (~selector))begin
             in0_avail = 1;
         end
         else begin
@@ -54,7 +54,7 @@ module binary_reductor#(
         end
     end
 
-    always(posedge clk) begin
+    always@(posedge clk) begin
         if(rst) begin
             in_slot0 <= 0;
             in_slot1 <= 0;

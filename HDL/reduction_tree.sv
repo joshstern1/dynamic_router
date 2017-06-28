@@ -1,9 +1,10 @@
+`include "para.sv"
 
-`define L1_N 6 //number of reductor in the first level
-`define L2_N 1 //number of reductor in the second level
 
 module reduction_tree#(
     parameter FAN_IN = 36,
+    parameter L1_N = 6,
+    parameter L2_N = 1
 )
 (
     input clk,
@@ -24,7 +25,7 @@ module reduction_tree#(
     wire [FLIT_SIZE - 1 : 0] out_L1_to_L2[L1_N - 1 : 0];
 //we need two levels of reductors
     //instantiate first level
-    generate i;
+    genvar i;
 
     generate
         for(i = 0; i < L1_N; i = i + 1) begin: L1_reductors
@@ -42,15 +43,22 @@ module reduction_tree#(
             );
         end
     endgenerate
+	 
+	 wire [FLIT_SIZE * L1_N - 1 : 0] out_L1_to_L2_packed;
+	 generate 
+	     for(i = 0; i < L1_N; i = i + 1) begin: pack_out_l1_to_l2
+		      assign out_L1_to_L2_packed[i * FLIT_SIZE + FLIT_SIZE - 1 : i* FLIT_SIZE] = out_L1_to_L2[i];	  
+		  end
+	 endgenerate
 
 
     //instantiate second level
     N_to_1_reductor#(
         .N(L2_W)
-    )(
+    )L2_reductor(
         .clk(clk),
         .rst(rst),
-        .in(out_L1_to_L2),
+        .in(out_L1_to_L2_packed),
         .in_valid(out_valid_L1_to_L2),
         .out_avail(out_avail),
         .in_avail(out_avail_L2_to_L1),

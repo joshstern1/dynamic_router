@@ -1,4 +1,5 @@
 
+`include "para.sv"
 module N_to_1_reductor#(
     parameter N = 6
 )(
@@ -56,7 +57,7 @@ module N_to_1_reductor#(
     endgenerate
 
 
-    wire[CMP_LEN - 1 : 0] max;
+    logic [CMP_LEN - 1 : 0] max;
     integer index = 0;
 	 
 	 reg [N - 1 : 0] pre_sel;
@@ -77,6 +78,7 @@ module N_to_1_reductor#(
         end
 
     end
+    
 
     always_comb begin
         max = in_slot[0][CMP_POS : CMP_POS - CMP_LEN + 1];

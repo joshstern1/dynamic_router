@@ -1,3 +1,5 @@
+`ifndef PARA_SV
+`define PARA_SV
 parameter FLIT_SIZE=64;
 parameter PHIT_SIZE=256;
 parameter IN_Q_SIZE=512;
@@ -28,11 +30,11 @@ parameter CREDIT_FLIT=3'b100;
 
 
 parameter VC_CLASS_POS=FLIT_SIZE - HEADER_LEN - 1;
-parameter PORT_NUM = 7;
+parameter PORT_NUM = 6;
 parameter DST_ZPOS = VC_CLASS_POS - 1;
-parameter DST_YPOS = DST_XPOS - ZW;
+parameter DST_YPOS = DST_ZPOS - ZW;
 parameter DST_XPOS = DST_YPOS - YW;
-parameter CMP_POS = DST_POS - XW - YW - ZW;
+parameter CMP_POS = DST_XPOS - XW;
 parameter CMP_LEN = 4;
- 
+`endif
 

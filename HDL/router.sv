@@ -1,3 +1,4 @@
+`include "para.sv"
 module router#(
     parameter cur_x = 0,
     parameter cur_y = 0,
@@ -147,12 +148,52 @@ module router#(
     wire [FLIT_SIZE - 1 : 0] in_yneg_RC;
     wire [FLIT_SIZE - 1 : 0] in_zneg_RC;
 
-    wire [input_Q_size - 1 : 0] in_xpos_q_usedw;
-    wire [input_Q_size - 1 : 0] in_ypos_q_usedw;
-    wire [input_Q_size - 1 : 0] in_zpos_q_usedw;
-    wire [input_Q_size - 1 : 0] in_xneg_q_usedw;
-    wire [input_Q_size - 1 : 0] in_yneg_q_usedw;
-    wire [input_Q_size - 1 : 0] in_zneg_q_usedw;
+    wire [input_Q_size - 1 : 0] in_xpos_usedw;
+    wire [input_Q_size - 1 : 0] in_ypos_usedw;
+    wire [input_Q_size - 1 : 0] in_zpos_usedw;
+    wire [input_Q_size - 1 : 0] in_xneg_usedw;
+    wire [input_Q_size - 1 : 0] in_yneg_usedw;
+    wire [input_Q_size - 1 : 0] in_zneg_usedw;
+
+
+    
+
+    always@(posedge clk) begin
+        if(rst) begin
+            xpos_downstream_credits <= input_Q_size - 1;
+            ypos_downstream_credits <= input_Q_size - 1;
+            zpos_downstream_credits <= input_Q_size - 1; 
+            xneg_downstream_credits <= input_Q_size - 1;
+            yneg_downstream_credits <= input_Q_size - 1;
+            zneg_downstream_credits <= input_Q_size - 1;
+        end
+        else begin
+            if(in_xpos_valid && in_xpos_is_credit) begin
+                xpos_downstream_credits <= in_xpos[FLIT_SIZE / 2 - 1]; //only need the payload
+            end
+            if(in_ypos_valid && in_ypos_is_credit) begin
+                ypos_downstream_credits <= in_ypos[FLIT_SIZE / 2 - 1]; //only need the payload
+            end
+            if(in_zpos_valid && in_zpos_is_credit) begin
+                zpos_downstream_credits <= in_zpos[FLIT_SIZE / 2 - 1]; //only need the payload
+            end
+            if(in_xneg_valid && in_xneg_is_credit) begin
+                xneg_downstream_credits <= in_xneg[FLIT_SIZE / 2 - 1]; //only need the payload
+            end
+            if(in_yneg_valid && in_yneg_is_credit) begin
+                yneg_downstream_credits <= in_yneg[FLIT_SIZE / 2 - 1]; //only need the payload
+            end
+            if(in_zneg_valid && in_zneg_is_credit) begin
+                zneg_downstream_credits <= in_zneg[FLIT_SIZE / 2 - 1]; //only need the payload
+            end
+        end
+    end
+
+
+
+
+
+
 
 
 
@@ -164,12 +205,12 @@ module router#(
         .clk(clk),
         .rst(rst),
         .in(in_xpos),
-        .produce(in_xpos_valid),
-        .consume(~VA_stall_xpos),
+        .produce(in_xpos_valid && (~in_xpos_is_credit)),
+        .consume(eject_xpos_valid || ~VA_stall_xpos),
         .full(),
         .empty(xpos_input_queue_empty),
         .out(in_xpos_RC),
-        .usedw(in_xpos_q_usedw)
+        .usedw(in_xpos_usedw)
     );
 
     assign in_xpos_valid_RC = ~xpos_input_queue_empty;
@@ -182,8 +223,8 @@ module router#(
         .clk(clk),
         .rst(rst),
         .in(in_ypos),
-        .produce(in_ypos_valid),
-        .consume(~VA_stall_ypos),
+        .produce(in_ypos_valid && (~in_ypos_is_credit)),
+        .consume(eject_ypos_valid || ~VA_stall_ypos),
         .full(),
         .empty(ypos_input_queue_empty),
         .out(in_ypos_RC),
@@ -200,8 +241,8 @@ module router#(
         .clk(clk),
         .rst(rst),
         .in(in_zpos),
-        .produce(in_zpos_valid),
-        .consume(~VA_stall_zpos),
+        .produce(in_zpos_valid && (~in_zpos_is_credit)),
+        .consume(eject_zpos_valid || ~VA_stall_zpos),
         .full(),
         .empty(zpos_input_queue_empty),
         .out(in_zpos_RC),
@@ -218,8 +259,8 @@ module router#(
         .clk(clk),
         .rst(rst),
         .in(in_xneg),
-        .produce(in_xneg_valid),
-        .consume(~VA_stall_xneg),
+        .produce(in_xneg_valid && (~in_xneg_is_credit)),
+        .consume(eject_xneg_valid || ~VA_stall_xneg),
         .full(),
         .empty(xneg_input_queue_empty),
         .out(in_xneg_RC),
@@ -236,8 +277,8 @@ module router#(
         .clk(clk),
         .rst(rst),
         .in(in_yneg),
-        .produce(in_yneg_valid),
-        .consume(~VA_stall_yneg),
+        .produce(in_yneg_valid && (~in_yneg_is_credit)),
+        .consume(eject_yneg_valid || ~VA_stall_yneg),
         .full(),
         .empty(yneg_input_queue_empty),
         .out(in_yneg_RC),
@@ -254,8 +295,8 @@ module router#(
         .clk(clk),
         .rst(rst),
         .in(in_zneg),
-        .produce(in_zneg_valid),
-        .consume(~VA_stall_zneg),
+        .produce(in_zneg_valid && (~in_zneg_is_credit)),
+        .consume(eject_zneg_valid || ~VA_stall_zneg),
         .full(),
         .empty(zneg_input_queue_empty),
         .out(in_zneg_RC),
@@ -281,8 +322,8 @@ module router#(
     )xpos_route_comp(
         .clk(clk),
         .rst(rst),
-        ,flit_valid_in(in_xpos_valid && (~in_xpos_is_credit)),
-        .flit_before_RC(in_xpos_valid),
+        .flit_valid_in(in_xpos_valid_RC),
+        .flit_before_RC(in_xpos_RC),
         .stall(VA_stall_xpos),
         .dir_in(DIR_XPOS),
         .flit_after_RC(flit_xpos_VA),
@@ -299,8 +340,8 @@ module router#(
     )ypos_route_comp(
         .clk(clk),
         .rst(rst),
-        ,flit_valid_in(in_ypos_valid && (~in_ypos_is_credit)),
-        .flit_before_RC(in_ypos_valid),
+        .flit_valid_in(in_ypos_valid_RC),
+        .flit_before_RC(in_ypos_RC),
         .stall(VA_stall_ypos),
         .dir_in(DIR_YPOS),
         .flit_after_RC(flit_ypos_VA),
@@ -317,13 +358,13 @@ module router#(
     )zpos_route_comp(
         .clk(clk),
         .rst(rst),
-        ,flit_valid_in(in_zpos_valid && (~in_zpos_is_credit)),
-        .flit_before_RC(in_zpos_valid),
+        .flit_valid_in(in_zpos_valid_RC),
+        .flit_before_RC(in_zpos_RC),
         .stall(VA_stall_zpos),
         .dir_in(DIR_ZPOS),
         .flit_after_RC(flit_zpos_VA),
         .flit_valid_out(flit_zpos_VA_valid),
-        .dir_out(flit_xneg_VA_route),
+        .dir_out(flit_zpos_VA_route),
         .eject_enable(eject_zpos_valid)
     );
     assign eject_zpos = flit_zpos_VA;
@@ -335,8 +376,8 @@ module router#(
     )xneg_route_comp(
         .clk(clk),
         .rst(rst),
-        ,flit_valid_in(in_xneg_valid && (~in_xneg_is_credit)),
-        .flit_before_RC(in_xneg_valid),
+        .flit_valid_in(in_xneg_valid_RC),
+        .flit_before_RC(in_xneg_RC),
         .stall(VA_stall_xneg),
         .dir_in(DIR_XNEG),
         .flit_after_RC(flit_xneg_VA),
@@ -353,8 +394,8 @@ module router#(
     )yneg_route_comp(
         .clk(clk),
         .rst(rst),
-        ,flit_valid_in(in_yneg_valid && (~in_yneg_is_credit)),
-        .flit_before_RC(in_yneg_valid),
+        .flit_valid_in(in_yneg_valid_RC),
+        .flit_before_RC(in_yneg_RC),
         .stall(VA_stall_yneg),
         .dir_in(DIR_YNEG),
         .flit_after_RC(flit_yneg_VA),
@@ -371,8 +412,8 @@ module router#(
     )zneg_route_comp(
         .clk(clk),
         .rst(rst),
-        ,flit_valid_in(in_zneg_valid && (~in_zneg_is_credit)),
-        .flit_before_RC(in_zneg_valid),
+        .flit_valid_in(in_zneg_valid_RC),
+        .flit_before_RC(in_zneg_RC),
         .stall(VA_stall_zneg),
         .dir_in(DIR_ZNEG),
         .flit_after_RC(flit_zneg_VA),
@@ -394,15 +435,15 @@ module router#(
     wire [VC_NUM - 1 : 0] VC_idle_ypos;
     wire [VC_NUM - 1 : 0] VC_idle_zpos;
     wire [VC_NUM - 1 : 0] VC_idle_xneg;
-    wire [VC_NUM - 1 : 0] VC_idle_ypos;
-    wire [VC_NUM - 1 : 0] VC_idle_ypos;
+    wire [VC_NUM - 1 : 0] VC_idle_yneg;
+    wire [VC_NUM - 1 : 0] VC_idle_zneg;
 
     wire [VC_NUM - 1 : 0] VC_grant_xpos;
     wire [VC_NUM - 1 : 0] VC_grant_ypos;
     wire [VC_NUM - 1 : 0] VC_grant_zpos;
     wire [VC_NUM - 1 : 0] VC_grant_xneg;
-    wire [VC_NUM - 1 : 0] VC_grant_ypos;
-    wire [VC_NUM - 1 : 0] VC_grant_ypos;
+    wire [VC_NUM - 1 : 0] VC_grant_yneg;
+    wire [VC_NUM - 1 : 0] VC_grant_zneg;
 
 
 
@@ -426,7 +467,7 @@ module router#(
         .idle_xneg(VC_idle_xneg),
         .idle_yneg(VC_idle_yneg),
         .idle_zneg(VC_idle_zneg),
-        .port_valid({flit_zneg_VA_valid, flit_yneg_VA_valid, flit_xneg_VA_valid, flit_zpos_VA_valid, flit_ypos_VA_valid, flit_xpos_VA_valid), //xpos 0th bit, ypos 1st bit, zpos 2nd bit, xneg 3rd bit, yneg 4th bit, zneg 5th bit
+        .port_valid({flit_zneg_VA_valid, flit_yneg_VA_valid, flit_xneg_VA_valid, flit_zpos_VA_valid, flit_ypos_VA_valid, flit_xpos_VA_valid}), //xpos 0th bit, ypos 1st bit, zpos 2nd bit, xneg 3rd bit, yneg 4th bit, zneg 5th bit
         .route_in_xpos(flit_xpos_VA_route),
         .route_in_ypos(flit_ypos_VA_route),
         .route_in_zpos(flit_zpos_VA_route),
@@ -494,15 +535,15 @@ module router#(
                 .R(flit_xpos_SA_route[i * ROUTE_LEN + ROUTE_LEN - 1 : i * ROUTE_LEN]),
                 .O(),
                 .P(),
-                .vc_full(vc_full_xpos[i]),
+                .vc_full(VC_full_xpos[i]),
                 .C(flit_xpos_SA_grant[i]),
                 .flit_in(flit_xpos_VA),
-                .valid_in(VA_grant_xpos[i]),
+                .valid_in(VC_grant_xpos[i]),
                 .route_in(flit_xpos_VA_route),
                 .grant(flit_xpos_SA_grant[i]),
                 .flit_out(flit_xpos_SA[i * FLIT_SIZE + FLIT_SIZE - 1 : i * FLIT_SIZE]),
                 .valid_out(flit_xpos_SA_valid[i]),
-                .vc_idle(vc_idle_xpos[i])
+                .vc_idle(VC_idle_xpos[i])
             );
         end
     endgenerate
@@ -518,15 +559,15 @@ module router#(
                 .R(flit_ypos_SA_route[i * ROUTE_LEN + ROUTE_LEN - 1 : i * ROUTE_LEN]),
                 .O(),
                 .P(),
-                .vc_full(vc_full_ypos[i]),
+                .vc_full(VC_full_ypos[i]),
                 .C(flit_ypos_SA_grant[i]),
                 .flit_in(flit_ypos_VA),
-                .valid_in(VA_grant_ypos[i]),
+                .valid_in(VC_grant_ypos[i]),
                 .route_in(flit_ypos_VA_route),
                 .grant(flit_ypos_SA_grant[i]),
                 .flit_out(flit_ypos_SA[i * FLIT_SIZE + FLIT_SIZE - 1 : i * FLIT_SIZE]),
                 .valid_out(flit_ypos_SA_valid[i]),
-                .vc_idle(vc_idle_ypos[i])
+                .vc_idle(VC_idle_ypos[i])
 
             );
         end
@@ -542,15 +583,15 @@ module router#(
                 .R(flit_zpos_SA_route[i * ROUTE_LEN + ROUTE_LEN - 1 : i * ROUTE_LEN]),
                 .O(),
                 .P(),
-                .vc_full(vc_full_zpos[i]),
+                .vc_full(VC_full_zpos[i]),
                 .C(flit_zpos_SA_grant[i]),
                 .flit_in(flit_zpos_VA),
-                .valid_in(VA_grant_zpos[i]),
+                .valid_in(VC_grant_zpos[i]),
                 .route_in(flit_zpos_VA_route),
                 .grant(flit_zpos_SA_grant[i]),
                 .flit_out(flit_zpos_SA[i * FLIT_SIZE + FLIT_SIZE - 1 : i * FLIT_SIZE]),
                 .valid_out(flit_zpos_SA_valid[i]),
-                .vc_idle(vc_idle_zpos[i])
+                .vc_idle(VC_idle_zpos[i])
 
             );
         end
@@ -565,15 +606,15 @@ module router#(
                 .R(flit_xneg_SA_route[i * ROUTE_LEN + ROUTE_LEN - 1 : i * ROUTE_LEN]),
                 .O(),
                 .P(),
-                .vc_full(vc_full_xneg[i]),
+                .vc_full(VC_full_xneg[i]),
                 .C(flit_xneg_SA_grant[i]),
                 .flit_in(flit_xneg_VA),
-                .valid_in(VA_grant_xneg[i]),
+                .valid_in(VC_grant_xneg[i]),
                 .route_in(flit_xneg_VA_route),
                 .grant(flit_xneg_SA_grant[i]),
                 .flit_out(flit_xneg_SA[i * FLIT_SIZE + FLIT_SIZE - 1 : i * FLIT_SIZE]),
                 .valid_out(flit_xneg_SA_valid[i]),
-                .vc_idle(vc_idle_xneg[i])
+                .vc_idle(VC_idle_xneg[i])
 
             );
         end
@@ -588,15 +629,15 @@ module router#(
                 .R(flit_yneg_SA_route[i * ROUTE_LEN + ROUTE_LEN - 1 : i * ROUTE_LEN]),
                 .O(),
                 .P(),
-                .vc_full(vc_full_yneg[i]),
+                .vc_full(VC_full_yneg[i]),
                 .C(flit_yneg_SA_grant[i]),
                 .flit_in(flit_yneg_VA),
-                .valid_in(VA_grant_yneg[i]),
+                .valid_in(VC_grant_yneg[i]),
                 .route_in(flit_yneg_VA_route),
                 .grant(flit_yneg_SA_grant[i]),
                 .flit_out(flit_yneg_SA[i * FLIT_SIZE + FLIT_SIZE - 1 : i * FLIT_SIZE]),
                 .valid_out(flit_yneg_SA_valid[i]),
-                .vc_idle(vc_idle_yneg[i])
+                .vc_idle(VC_idle_yneg[i])
 
             );
         end
@@ -611,15 +652,15 @@ module router#(
                 .R(flit_zneg_SA_route[i * ROUTE_LEN + ROUTE_LEN - 1 : i * ROUTE_LEN]),
                 .O(),
                 .P(),
-                .vc_full(vc_full_zneg[i]),
+                .vc_full(VC_full_zneg[i]),
                 .C(flit_zneg_SA_grant[i]),
                 .flit_in(flit_zneg_VA),
-                .valid_in(VA_grant_zneg[i]),
+                .valid_in(VC_grant_zneg[i]),
                 .route_in(flit_zneg_VA_route),
                 .grant(flit_zneg_SA_grant[i]),
                 .flit_out(flit_zneg_SA[i * FLIT_SIZE + FLIT_SIZE - 1 : i * FLIT_SIZE]),
                 .valid_out(flit_zneg_SA_valid[i]),
-                .vc_idle(vc_idle_zneg[i])
+                .vc_idle(VC_idle_zneg[i])
 
             );
         end
@@ -635,10 +676,50 @@ module router#(
     wire [FLIT_SIZE - 1 : 0] flit_yneg_ST;
     wire [FLIT_SIZE - 1 : 0] flit_zneg_ST;
 
+    wire xpos_downstream_avail;
+    wire ypos_downstream_avail;
+    wire zpos_downstream_avail;
+    wire xneg_downstream_avail;
+    wire yneg_downstream_avail;
+    wire zneg_downstream_avail;
+
+    wire zneg_avail_ST;
+    wire yneg_avail_ST;
+    wire xneg_avail_ST;
+    wire zpos_avail_ST;
+    wire ypos_avail_ST;
+    wire xpos_avail_ST;
+
+    wire [PORT_NUM -1 : 0] out_avail_ST;
+    wire [PORT_NUM * FLIT_SIZE - 1 : 0] out_ST;
+
+    wire [FLIT_SIZE - 1 : 0] zneg_out_ST;
+    wire [FLIT_SIZE - 1 : 0] yneg_out_ST;
+    wire [FLIT_SIZE - 1 : 0] xneg_out_ST;
+    wire [FLIT_SIZE - 1 : 0] zpos_out_ST;
+    wire [FLIT_SIZE - 1 : 0] ypos_out_ST;
+    wire [FLIT_SIZE - 1 : 0] xpos_out_ST;
+
+    assign xpos_out_ST = out_ST[FLIT_SIZE - 1 : 0];
+    assign ypos_out_ST = out_ST[2 * FLIT_SIZE - 1 : FLIT_SIZE];
+    assign zpos_out_ST = out_ST[3 * FLIT_SIZE - 1 : 2 * FLIT_SIZE];
+    assign xneg_out_ST = out_ST[4 * FLIT_SIZE - 1 : 3 * FLIT_SIZE];
+    assign yneg_out_ST = out_ST[5 * FLIT_SIZE - 1 : 4 * FLIT_SIZE];
+    assign zneg_out_ST = out_ST[6 * FLIT_SIZE - 1 : 5 * FLIT_SIZE];
+
+
+
+    assign  xpos_downstream_avail = (xpos_downstream_credits >= credit_threshold);
+    assign  ypos_downstream_avail = (ypos_downstream_credits >= credit_threshold);
+    assign  zpos_downstream_avail = (zpos_downstream_credits >= credit_threshold);
+    assign  xneg_downstream_avail = (xneg_downstream_credits >= credit_threshold);
+    assign  yneg_downstream_avail = (yneg_downstream_credits >= credit_threshold);
+    assign  zneg_downstream_avail = (zneg_downstream_credits >= credit_threshold);
+
 
     switch#(
         .M_IN(VC_NUM * PORT_NUM),
-        .N_out(PORT_NUM)
+        .N_OUT(PORT_NUM)
     )sw_inst(
         .clk(clk),
         .rst(rst),
@@ -647,14 +728,57 @@ module router#(
         .in_valid({flit_zneg_SA_valid, flit_yneg_SA_valid, flit_xneg_SA_valid, flit_zpos_SA_valid, flit_ypos_SA_valid, flit_xpos_SA_valid}),
         .in_avail({flit_zneg_SA_grant, flit_yneg_SA_grant, flit_xneg_SA_grant, flit_zpos_SA_grant, flit_ypos_SA_grant, flit_xpos_SA_grant}),
         
-        .out_valid(),
-        .out_avail(),
-        .out()
+        .out_valid(flit_valid_ST),
+        .out_avail({zneg_avail_ST, yneg_avail_ST, xneg_avail_ST, zpos_avail_ST, ypos_avail_ST, xpos_avail_ST}),
+        .out(out_ST)
     );
 
+    reg [FLIT_SIZE - 1 : 0] credit_period_counter;
+
+    always@(posedge clk) begin
+        if(rst) begin
+            credit_period_counter <= 0;
+        end
+        else begin
+            credit_period_counter <= (credit_period_counter < credit_back_period ? credit_period_counter + 1 : 0);
+        end
+    end
+    
+    
+
+    assign zneg_avail_ST = zneg_downstream_avail && (credit_period_counter != credit_back_period - 1);
+    assign yneg_avail_ST = yneg_downstream_avail && (credit_period_counter != credit_back_period - 1);
+    assign xneg_avail_ST = xneg_downstream_avail && (credit_period_counter != credit_back_period - 1);
+    assign zpos_avail_ST = zpos_downstream_avail && (credit_period_counter != credit_back_period - 1);
+    assign ypos_avail_ST = ypos_downstream_avail && (credit_period_counter != credit_back_period - 1);
+    assign xpos_avail_ST = xpos_downstream_avail && (credit_period_counter != credit_back_period - 1);
+
+    assign out_xpos_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[0];
+    assign out_ypos_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[1];
+    assign out_zpos_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[2];
+    assign out_xneg_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[3];
+    assign out_yneg_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[4];
+    assign out_zneg_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[5];
 
 
-    endmodule
+
+    assign out_xpos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, xpos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : xpos_out_ST;
+    assign out_ypos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, ypos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : ypos_out_ST;
+    assign out_zpos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, zpos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : zpos_out_ST;
+    assign out_xneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, xneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : xneg_out_ST;
+    assign out_yneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, yneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : yneg_out_ST;
+    assign out_zneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, zneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : zneg_out_ST;
+
+    
+    
+
+
+
+
+
+    
+    
+endmodule
     
     
 

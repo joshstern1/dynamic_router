@@ -1,0 +1,80 @@
+`include "para.sv"
+module router_top_test(
+    input clk,
+    input rst,
+    input [FLIT_SIZE - 1 : 0] in,
+    input in_valid,
+    ouput [FLIT_SIZE - 1 : 0] out,
+    output out_valid,
+
+    output [FLIT_SIZE - 1 : 0] eject,
+    output eject_valid,
+    input [FLIT_SIZE - 1 : 0] inject,
+    input inect_valid
+);
+    
+    router#(
+        .cur_x(0),
+        .cur_y(0),
+        .cur_z(0),
+        .input_Q_size(256),
+        .credit_back_period(100),
+        .credit_threshold(160)
+    )router_inst(
+        .clk(clk),
+        .rst(rst),
+        .in_xpos(in),
+        .in_ypos(in),
+        .in_zpos(in),
+        .in_xneg(in),
+        .in_yneg(in),
+        .in_zneg(in),
+        .in_xpos_valid(in_valid),
+        .in_ypos_valid(in_valid),
+        .in_zpos_valid(in_valid),
+        .in_xneg_valid(in_valid),
+        .in_yneg_valid(in_valid),
+        .in_zneg_valid(in_valid),
+        .out_xpos(out),
+        .out_ypos(out),
+        .out_zpos(out),
+        .out_xneg(out),
+        .out_yneg(out),
+        .out_zneg(out),
+        .out_xpos_valid(out_valid),
+        .out_ypos_valid(out_valid),
+        .out_zpos_valid(out_valid),
+        .out_xneg_valid(out_valid),
+        .out_yneg_valid(out_valid),
+        .out_zneg_valid(out_valid),
+        
+        .eject_xpos(eject),
+        .eject_ypos(eject),
+        .eject_zpos(eject),
+        .eject_xneg(eject),
+        .eject_yneg(eject),
+        .eject_zneg(eject),
+        .eject_xpos(eject_xpos_valid),
+        .eject_ypos(eject_ypos_valid),
+        .eject_zpos(eject_zpos_valid),
+        .eject_xneg(eject_xneg_valid),
+        .eject_yneg(eject_yneg_valid),
+        .eject_zneg(eject_zneg_valid),
+        
+        .inject_xpos(inject),
+        .inject_ypos(inject),
+        .inject_zpos(inject),
+        .inject_xneg(inject),
+        .inject_yneg(inject),
+        .inject_zneg(inject),
+
+        .inject_xpos_valid(inject_valid),
+        .inject_ypos_valid(inject_valid),
+        .inject_zpos_valid(inject_valid),
+        .inject_xneg_valid(inject_valid),
+        .inject_yneg_valid(inject_valid),
+        .inject_zneg_valid(inject_valid),
+    );
+
+
+endmodule

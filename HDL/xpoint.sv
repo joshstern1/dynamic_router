@@ -1,10 +1,10 @@
-`include "parameter.v"
+`include "para.sv"
 module xpoint(
     input [FLIT_SIZE - 1 : 0] h_in,
     input [FLIT_SIZE - 1 : 0] v_in,
     input cross_enable,
-    output [FLIT_SIZE - 1 : 0] h_out,
-    output [FLIT_SIZE - 1 : 0] v_out,
+    output reg [FLIT_SIZE - 1 : 0] h_out,
+    output reg [FLIT_SIZE - 1 : 0] v_out
 );
 
     always@(*) begin

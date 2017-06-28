@@ -1,4 +1,4 @@
-`include "parameter.v"
+`include "para.sv"
 module VC
 (
     input clk,
@@ -7,9 +7,9 @@ module VC
     output reg [2:0] G, //Global: state Either idle (I), routing (R), waiting for an output VC (V), active (A), or waiting for credits (C).
     output [ROUTE_LEN - 1 : 0] R, //Route: After routing is completed for a packet, this field holds the output port selected for the packet.
     output reg [3:0] O, //Output VC: After virtual-channel allocation is completed for a packet, this field holds the output virtual channel of port R assigned to the packet.
-    output reg [buffer_width - 1:0] P, //the number of the empty slots in VC
+    output reg [FLIT_SIZE - 1:0] P, //the number of the empty slots in VC
     output vc_full,
-    input [2:0] C,       //Credit count: The number of credits (available downstream flit buffers) for output virtual channel O on output port R.
+	 input [2:0] C,//Credit count: The number of credits (available downstream flit buffers) for output virtual channel O on output port R.
     
     input [FLIT_SIZE-1:0] flit_in,
     input valid_in,
@@ -29,7 +29,7 @@ module VC
     wire buffer_consume;
     wire buffer_full;
     wire buffer_empty;
-    wire [buffer_width - 1 : 0] buffer_usedw;
+    wire [FLIT_SIZE - 1 : 0] buffer_usedw;
     
     wire in_is_head;
 
@@ -47,7 +47,7 @@ module VC
 //VC states list
     parameter IDLE                = 3'd0;
     parameter ROUTING             = 3'd1;
-    parameter WATING_FOR_OVC      = 3'd2;
+    parameter WAITING_FOR_OVC      = 3'd2;
     parameter ACTIVE              = 3'd3;
     parameter WAITING_FOR_CREDITS = 3'd4;
 
@@ -84,11 +84,11 @@ module VC
                             if(in_is_head || in_is_single) begin
                                 G <= WAITING_FOR_OVC;
                             end
-                            else if(in_valid) begin
+                            else if(valid_in) begin
                                 G <= ACTIVE;
                             end
                             else if(out_is_tail || out_is_single) begin
-                                G <= IDLE:
+                                G <= IDLE;
                             end
                             else begin
                                 G <= ACTIVE;
@@ -104,7 +104,7 @@ module VC
                         end
                     end
                     else begin
-                        G <= ACTIVE://downstream OVC has no credits
+                        G <= ACTIVE;//downstream OVC has no credits
                     end
                 end
                 WAITING_FOR_OVC: begin
@@ -154,7 +154,7 @@ module VC
 
     buffer#(
         .buffer_width(FLIT_SIZE + ROUTE_LEN),
-        .buffer_depth(VC_SIZE),
+        .buffer_depth(VC_SIZE)
     )VC_buffer(
         .clk        (clk),
         .rst        (rst),
@@ -167,9 +167,9 @@ module VC
         .usedw      (buffer_usedw)
     );
 
-    assign buffer_consume = (state == ACTIVE) && (C >= 1);
+    assign buffer_consume = (G == ACTIVE) && (C >= 1);
 
-    assign buffer_produce = in_valid;
+    assign buffer_produce = valid_in;
 
 
     assign P = VC_SIZE - 1 - buffer_usedw;

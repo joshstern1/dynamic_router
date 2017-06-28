@@ -1,10 +1,9 @@
-`include "parameter.v" 
-`ifdef OUTPUT_BUFFERING
+`include "para.sv" 
+`define OUTPUT_BUFFERING
 
 
 //the dateline exist between the id from XW - 1 and 0, when the packet come across the dateline from XW - 1 to 0, the VC set number goes from 0 to 1, when the packet come across the dateline from 0 to XW - 1 the VC set number goese from 1 to 0
-module VC_allocator#(
-)
+module VC_allocator
 (
     input clk,
     input rst,
@@ -242,12 +241,12 @@ module VC_allocator#(
     wire VC_class_yneg;
     wire VC_class_zneg;
 
-    wire VA_stall_xpos;
-    wire VA_stall_ypos;
-    wire VA_stall_zpos;
-    wire VA_stall_xneg;
-    wire VA_stall_yneg;
-    wire VA_stall_zneg;
+    reg VA_stall_xpos;
+    reg VA_stall_ypos;
+    reg VA_stall_zpos;
+    reg VA_stall_xneg;
+    reg VA_stall_yneg;
+    reg VA_stall_zneg;
 
     assign VC_class_xpos = flit_xpos[VC_CLASS_POS];
     assign VC_class_ypos = flit_ypos[VC_CLASS_POS];
@@ -267,7 +266,7 @@ module VC_allocator#(
             end
             else begin
                 VA_stall_xpos = 0;
-                nxt_grant_xpos = {1'b0, idle_xpos[VC_NUM - 2 : 0] & (~idle_xpos[VC_NUM - 2 : 0] + 1)};
+                nxt_grant_xpos = {1'b0, idle_xpos[VC_NUM - 2 : 0] & (~idle_xpos[VC_NUM - 2 : 0] + 8'd1)};
             end
         end
         else begin
@@ -277,7 +276,7 @@ module VC_allocator#(
             end
             else begin
                 VA_stall_xpos = 0;
-                nxt_grant_xpos = {idle_xpos[VC_NUM - 1 : 1] & (~idle_xpos[VC_NUM - 1 : 1] + 1), 1'b0};
+                nxt_grant_xpos = {idle_xpos[VC_NUM - 1 : 1] & (~idle_xpos[VC_NUM - 1 : 1] + 8'd1), 1'b0};
             end
         end
     end
@@ -291,7 +290,7 @@ module VC_allocator#(
             end
             else begin
                 VA_stall_ypos = 0;
-                nxt_grant_ypos = {1'b0, idle_ypos[VC_NUM - 2 : 0] & (~idle_ypos[VC_NUM - 2 : 0] + 1)};
+                nxt_grant_ypos = {1'b0, idle_ypos[VC_NUM - 2 : 0] & (~idle_ypos[VC_NUM - 2 : 0] + 8'd1)};
             end
         end
         else begin
@@ -301,7 +300,7 @@ module VC_allocator#(
             end
             else begin
                 VA_stall_ypos = 0;
-                nxt_grant_ypos = {idle_ypos[VC_NUM - 1 : 1] & (~idle_ypos[VC_NUM - 1 : 1] + 1), 1'b0};
+                nxt_grant_ypos = {idle_ypos[VC_NUM - 1 : 1] & (~idle_ypos[VC_NUM - 1 : 1] + 8'd1), 1'b0};
             end
         end
     end
@@ -315,7 +314,7 @@ module VC_allocator#(
             end
             else begin
                 VA_stall_zpos = 0;
-                nxt_grant_zpos = {1'b0, idle_zpos[VC_NUM - 2 : 0] & (~idle_zpos[VC_NUM - 2 : 0] + 1)};
+                nxt_grant_zpos = {1'b0, idle_zpos[VC_NUM - 2 : 0] & (~idle_zpos[VC_NUM - 2 : 0] + 8'd1)};
             end
         end
         else begin
@@ -325,7 +324,7 @@ module VC_allocator#(
             end
             else begin
                 VA_stall_zpos = 0;
-                nxt_grant_zpos = {idle_zpos[VC_NUM - 1 : 1] & (~idle_zpos[VC_NUM - 1 : 1] + 1), 1'b0};
+                nxt_grant_zpos = {idle_zpos[VC_NUM - 1 : 1] & (~idle_zpos[VC_NUM - 1 : 1] + 8'd1), 1'b0};
             end
         end
     end
@@ -339,7 +338,7 @@ module VC_allocator#(
             end
             else begin
                 VA_stall_xneg = 0;
-                nxt_grant_xneg = {1'b0, idle_xneg[VC_NUM - 2 : 0] & (~idle_xneg[VC_NUM - 2 : 0] + 1)};
+                nxt_grant_xneg = {1'b0, idle_xneg[VC_NUM - 2 : 0] & (~idle_xneg[VC_NUM - 2 : 0] + 8'd1)};
             end
         end
         else begin
@@ -349,7 +348,7 @@ module VC_allocator#(
             end
             else begin
                 VA_stall_xneg = 0;
-                nxt_grant_xneg = {idle_xneg[VC_NUM - 1 : 1] & (~idle_xneg[VC_NUM - 1 : 1] + 1), 1'b0};
+                nxt_grant_xneg = {idle_xneg[VC_NUM - 1 : 1] & (~idle_xneg[VC_NUM - 1 : 1] + 8'd1), 1'b0};
             end
         end
     end
@@ -363,7 +362,7 @@ module VC_allocator#(
             end
             else begin
                 VA_stall_yneg = 0;
-                nxt_grant_yneg = {1'b0, idle_yneg[VC_NUM - 2 : 0] & (~idle_yneg[VC_NUM - 2 : 0] + 1)};
+                nxt_grant_yneg = {1'b0, idle_yneg[VC_NUM - 2 : 0] & (~idle_yneg[VC_NUM - 2 : 0] + 8'd1)};
             end
         end
         else begin
@@ -373,7 +372,7 @@ module VC_allocator#(
             end
             else begin
                 VA_stall_yneg = 0;
-                nxt_grant_yneg = {idle_yneg[VC_NUM - 1 : 1] & (~idle_yneg[VC_NUM - 1 : 1] + 1), 1'b0};
+                nxt_grant_yneg = {idle_yneg[VC_NUM - 1 : 1] & (~idle_yneg[VC_NUM - 1 : 1] + 8'd1), 1'b0};
             end
         end
     end
@@ -387,7 +386,7 @@ module VC_allocator#(
             end
             else begin
                 VA_stall_zneg = 0;
-                nxt_grant_zneg = {1'b0, idle_zneg[VC_NUM - 2 : 0] & (~idle_zneg[VC_NUM - 2 : 0] + 1)};
+                nxt_grant_zneg = {1'b0, idle_zneg[VC_NUM - 2 : 0] & (~idle_zneg[VC_NUM - 2 : 0] + 8'd1)};
             end
         end
         else begin
@@ -397,7 +396,7 @@ module VC_allocator#(
             end
             else begin
                 VA_stall_zneg = 0;
-                nxt_grant_zneg = {idle_zneg[VC_NUM - 1 : 1] & (~idle_zneg[VC_NUM - 1 : 1] + 1), 1'b0};
+                nxt_grant_zneg = {idle_zneg[VC_NUM - 1 : 1] & (~idle_zneg[VC_NUM - 1 : 1] + 8'd1), 1'b0};
             end
         end
     end
@@ -405,12 +404,12 @@ module VC_allocator#(
     
 
     always@(posedge clk) begin
-        pre_grant_xpos <= cur_grant_xpos;
-        pre_grant_ypos <= cur_grant_ypos;
-        pre_grant_zpos <= cur_grant_zpos;
-        pre_grant_xneg <= cur_grant_xneg;
-        pre_grant_yneg <= cur_grant_yneg;
-        pre_grant_zneg <= cur_grant_zneg;
+        pre_grant_xpos <= grant_xpos;
+        pre_grant_ypos <= grant_ypos;
+        pre_grant_zpos <= grant_zpos;
+        pre_grant_xneg <= grant_xneg;
+        pre_grant_yneg <= grant_yneg;
+        pre_grant_zneg <= grant_zneg;
     end
 
 

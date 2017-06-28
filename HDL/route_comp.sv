@@ -1,6 +1,5 @@
-`include "para.v"
 
-
+`include "para.sv"
 //the packet format:
 //head flit   |type|VC class|dst|cmp|payload| 
 //body flits  |type|                 payload|
@@ -71,7 +70,7 @@ module route_comp
                         new_VC_class = old_VC_class;
                     end
                 end
-                CIR_XNEG: begin
+                DIR_XNEG: begin
                     if(cur_x == XSIZE - 1) begin
                         new_VC_class = 0;
                     end
@@ -88,7 +87,7 @@ module route_comp
                         new_VC_class = old_VC_class;
                     end
                 end
-                CIR_YNEG: begin
+                DIR_YNEG: begin
                     if(cur_y == YSIZE - 1) begin
                         new_VC_class = 0;
                     end
@@ -105,7 +104,7 @@ module route_comp
                         new_VC_class = old_VC_class;
                     end
                 end
-                CIR_ZNEG: begin
+                DIR_ZNEG: begin
                     if(cur_z == ZSIZE - 1) begin
                         new_VC_class = 0;
                     end
@@ -161,14 +160,14 @@ module route_comp
         end
         else if(~ejecting) begin
             if(~ stall) begin
-                flit_after_RC <= {flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN], new_VC_class, flit_before_RC[FLIT_SIZE - HEADER_LEN - 1  : 0]};
+                flit_after_RC <= {flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN], new_VC_class, flit_before_RC[FLIT_SIZE - HEADER_LEN - 2  : 0]};
                 if((flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) || (flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == SINGLE_FLIT))begin
                     dir_out<=dir;
                 end
             end
         end
         else begin //dir equals to eject port
-            flit_after_RC <= {flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN], new_VC_class, flit_before_RC[FLIT_SIZE - HEADER_LEN - 1  : 0]};
+            flit_after_RC <= {flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN], new_VC_class, flit_before_RC[FLIT_SIZE - HEADER_LEN - 2  : 0]};
             dir_out <= DIR_EJECT;
         end
     end
@@ -206,7 +205,7 @@ module route_comp
                 end
             end
             else begin
-                if(dst_y - cur_y) <= YSIZE/2) begin
+                if(dst_y - cur_y <= YSIZE/2) begin
                     dir = DIR_YPOS;
                 end
                 else begin
@@ -224,7 +223,7 @@ module route_comp
                 end
             end
             else begin
-                if(dst_z - cur_z) <= ZSIZE/2) begin
+                if(dst_z - cur_z <= ZSIZE/2) begin
                     dir = DIR_ZPOS;
                 end 
                 else begin
