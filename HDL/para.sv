@@ -1,10 +1,10 @@
 `ifndef PARA_SV
 `define PARA_SV
-parameter FLIT_SIZE=64;
+parameter FLIT_SIZE=128;
 parameter PHIT_SIZE=256;
 parameter IN_Q_SIZE=512;
 parameter VC_SIZE=4;
-parameter VC_NUM=8;
+parameter VC_NUM=9;
 parameter XSIZE=4'd8;  //the number of nodes in x dimension
 parameter YSIZE=4'd8;  //the number of nodes in y dimension
 parameter ZSIZE=4'd8;  //the number of nodes in z dimension

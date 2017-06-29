@@ -5,7 +5,7 @@
 //
 //`define SIM
 `define SYNTH
-module buffer
+module large_buffer
 #(
     parameter buffer_depth=8,
     parameter buffer_width=64
@@ -78,7 +78,7 @@ module buffer
 		scfifo_component.lpm_showahead = "ON",
 		scfifo_component.lpm_type = "scfifo",
 		scfifo_component.lpm_width = buffer_width,
-		scfifo_component.lpm_widthu = 2,
+		scfifo_component.lpm_widthu = 8,
 		scfifo_component.overflow_checking = "ON",
 		scfifo_component.underflow_checking = "ON",
 		scfifo_component.use_eab = "ON";           

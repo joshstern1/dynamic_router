@@ -63,6 +63,12 @@ module router#(
     input inject_xneg_valid,
     input inject_yneg_valid,
     input inject_zneg_valid
+    output inject_xpos_avail,
+    output inject_ypos_avail,
+    output inject_zpos_avail,
+    output inject_xneg_avail,
+    output inject_yneg_avail,
+    output inject_zneg_avail
 );
     
     //instantiate route computation components
@@ -197,7 +203,7 @@ module router#(
 
 
 
-    buffer#(
+    large_buffer#(
         .buffer_depth(input_Q_size),
         .buffer_width(FLIT_SIZE)
     )
@@ -215,7 +221,7 @@ module router#(
 
     assign in_xpos_valid_RC = ~xpos_input_queue_empty;
 
-    buffer#(
+    large_buffer#(
         .buffer_depth(input_Q_size),
         .buffer_width(FLIT_SIZE)
     )
@@ -233,7 +239,7 @@ module router#(
 
     assign in_ypos_valid_RC = ~ypos_input_queue_empty;
 
-    buffer#(
+    large_buffer#(
         .buffer_depth(input_Q_size),
         .buffer_width(FLIT_SIZE)
     )
@@ -251,7 +257,7 @@ module router#(
 
     assign in_zpos_valid_RC = ~zpos_input_queue_empty;
  
-    buffer#(
+    large_buffer#(
         .buffer_depth(input_Q_size),
         .buffer_width(FLIT_SIZE)
     )
@@ -269,7 +275,7 @@ module router#(
 
     assign in_xneg_valid_RC = ~xneg_input_queue_empty;
 
-    buffer#(
+    large_buffer#(
         .buffer_depth(input_Q_size),
         .buffer_width(FLIT_SIZE)
     )
@@ -287,7 +293,7 @@ module router#(
 
     assign in_yneg_valid_RC = ~yneg_input_queue_empty;
 
-    buffer#(
+    large_buffer#(
         .buffer_depth(input_Q_size),
         .buffer_width(FLIT_SIZE)
     )
@@ -753,12 +759,12 @@ module router#(
     assign ypos_avail_ST = ypos_downstream_avail && (credit_period_counter != credit_back_period - 1);
     assign xpos_avail_ST = xpos_downstream_avail && (credit_period_counter != credit_back_period - 1);
 
-    assign out_xpos_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[0];
-    assign out_ypos_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[1];
-    assign out_zpos_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[2];
-    assign out_xneg_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[3];
-    assign out_yneg_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[4];
-    assign out_zneg_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[5];
+    assign out_xpos_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[0] || inject_xpos_valid;
+    assign out_ypos_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[1] || inject_ypos_valid;
+    assign out_zpos_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[2] || inject_zpos_valid;
+    assign out_xneg_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[3] || inject_xneg_valid;
+    assign out_yneg_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[4] || inject_yneg_valid;
+    assign out_zneg_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[5] || inject_zneg_valid;
 
 
 
@@ -770,10 +776,12 @@ module router#(
     assign out_zneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, zneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : zneg_out_ST;
 
     
-    
-
-
-
+    assign inject_xpos_avail = xpos_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~flit_valid_ST[0]);
+    assign inject_ypos_avail = ypos_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~flit_valid_ST[1]);
+    assign inject_zpos_avail = zpos_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~flit_valid_ST[2]);
+    assign inject_xneg_avail = xneg_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~flit_valid_ST[3]);
+    assign inject_yneg_avail = yneg_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~flit_valid_ST[4]);
+    assign inject_zneg_avail = zneg_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~flit_valid_ST[5]);
 
 
     
