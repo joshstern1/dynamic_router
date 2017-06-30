@@ -46,6 +46,17 @@ module local_unit
 
     reg [9:0] injection_control_counter;
 
+    wire injection_enable;
+
+`ifdef NEAREST_NEIGHBOR
+    //packet generater
+    inject_packet_router 
+
+
+    //packet checker
+    //
+    
+
 
     wire local_fifo_full;
     wire local_fifo_empty;
@@ -62,6 +73,7 @@ module local_unit
     reg [RoutingTableWidth-1:0] routing_table[RoutingTablesize-1:0];
 //data is register based 
 //
+    
     reg [DataWidth-1:0] eject_local_reg;    
     reg [DataWidth-1:0] eject_yneg_reg;
     reg [DataWidth-1:0] eject_ypos_reg;
@@ -73,10 +85,21 @@ module local_unit
 
     always@(posedge clk) begin
         if(rst) begin
-            injection_control_counter<=0;
+            injection_control_counter <= 0;
         end
         else begin
-            injection_control_counter<=(injection_control_counter==injection_rate-1)?0:injection_control_counter+1;
+            injection_control_counter <= (injection_control_counter == injection_rate - 1) ? 0 : injection_control_counter + 1;
+        end
+    end
+
+    assign injection_enable = (injection_control_counter == injection_rate - 1);
+
+    always@(posedge clk) begin
+        if(rst) begin
+            e
+        end
+        else begin
+            
         end
     end
 
