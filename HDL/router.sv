@@ -62,7 +62,7 @@ module router#(
     input inject_zpos_valid,
     input inject_xneg_valid,
     input inject_yneg_valid,
-    input inject_zneg_valid
+    input inject_zneg_valid,
     output inject_xpos_avail,
     output inject_ypos_avail,
     output inject_zpos_avail,
