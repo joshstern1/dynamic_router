@@ -1,4 +1,4 @@
-`include "para.sv"
+
 module switch#(
     parameter M_IN = VC_NUM * PORT_NUM,
     parameter N_OUT= PORT_NUM

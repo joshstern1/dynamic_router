@@ -133,7 +133,6 @@ module large_buffer
     end
 
     reg [buffer_width - 1 : 0] usedw_reg;
-    assign usedw = usedw_reg;
     always@(*) begin
         if(tail >= head) begin
             usedw_reg = tail - head;

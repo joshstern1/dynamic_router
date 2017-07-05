@@ -178,12 +178,13 @@ module node
     xpos_link_inst(
         .rst(rst),
         .clk(clk),
-        .tx_par_data_valid(in_xpos_valid),
-        .tx_ser_data(in_xpos_ser),
+        .tx_par_data_valid(out_xpos_valid),
+        .tx_par_data(out_xpos),
+        .tx_ser_data(out_xpos_ser),
         .tx_ready(),
-        .rx_par_data(out_xpos),
-        .rx_par_data_valid(out_xpos_valid),
-        .rx_ser_data(out_xpos_ser),
+        .rx_par_data(in_xpos),
+        .rx_par_data_valid(in_xpos_valid),
+        .rx_ser_data(in_xpos_ser),
         .rx_ready()
     );
 
@@ -194,12 +195,13 @@ module node
     ypos_link_inst(
         .rst(rst),
         .clk(clk),
-        .tx_par_data_valid(in_ypos_valid),
-        .tx_ser_data(in_ypos_ser),
+        .tx_par_data_valid(out_ypos_valid),
+        .tx_par_data(out_ypos),
+        .tx_ser_data(out_ypos_ser),
         .tx_ready(),
-        .rx_par_data(out_ypos),
-        .rx_par_data_valid(out_ypos_valid),
-        .rx_ser_data(out_ypos_ser),
+        .rx_par_data(in_ypos),
+        .rx_par_data_valid(in_ypos_valid),
+        .rx_ser_data(in_ypos_ser),
         .rx_ready()
     );
 
@@ -210,12 +212,13 @@ module node
     zpos_link_inst(
         .rst(rst),
         .clk(clk),
-        .tx_par_data_valid(in_zpos_valid),
-        .tx_ser_data(in_zpos_ser),
+        .tx_par_data_valid(out_zpos_valid),
+        .tx_par_data(out_zpos),
+        .tx_ser_data(out_zpos_ser),
         .tx_ready(),
-        .rx_par_data(out_zpos),
-        .rx_par_data_valid(out_zpos_valid),
-        .rx_ser_data(out_zpos_ser),
+        .rx_par_data(in_zpos),
+        .rx_par_data_valid(in_zpos_valid),
+        .rx_ser_data(in_zpos_ser),
         .rx_ready()
     );
 
@@ -226,12 +229,13 @@ module node
     xneg_link_inst(
         .rst(rst),
         .clk(clk),
-        .tx_par_data_valid(in_xneg_valid),
-        .tx_ser_data(in_xneg_ser),
+        .tx_par_data_valid(out_xneg_valid),
+        .tx_par_data(out_xneg),
+        .tx_ser_data(out_xneg_ser),
         .tx_ready(),
-        .rx_par_data(out_xneg),
-        .rx_par_data_valid(out_xneg_valid),
-        .rx_ser_data(out_xneg_ser),
+        .rx_par_data(in_xneg),
+        .rx_par_data_valid(in_xneg_valid),
+        .rx_ser_data(in_xneg_ser),
         .rx_ready()
     );
 //yneg link
@@ -241,12 +245,13 @@ module node
     yneg_link_inst(
         .rst(rst),
         .clk(clk),
-        .tx_par_data_valid(in_yneg_valid),
-        .tx_ser_data(in_yneg_ser),
+        .tx_par_data_valid(out_yneg_valid),
+        .tx_par_data(out_yneg),
+        .tx_ser_data(out_yneg_ser),
         .tx_ready(),
-        .rx_par_data(out_yneg),
-        .rx_par_data_valid(out_yneg_valid),
-        .rx_ser_data(out_yneg_ser),
+        .rx_par_data(in_yneg),
+        .rx_par_data_valid(in_yneg_valid),
+        .rx_ser_data(in_yneg_ser),
         .rx_ready()
     );
 //zneg link
@@ -256,12 +261,13 @@ module node
     zneg_link_inst(
         .rst(rst),
         .clk(clk),
-        .tx_par_data_valid(in_zneg_valid),
-        .tx_ser_data(in_zneg_ser),
+        .tx_par_data_valid(out_zneg_valid),
+        .tx_par_data(out_zneg),
+        .tx_ser_data(out_zneg_ser),
         .tx_ready(),
-        .rx_par_data(out_zneg),
-        .rx_par_data_valid(out_zneg_valid),
-        .rx_ser_data(out_zneg_ser),
+        .rx_par_data(in_zneg),
+        .rx_par_data_valid(in_zneg_valid),
+        .rx_ser_data(in_zneg_ser),
         .rx_ready()
     );
 

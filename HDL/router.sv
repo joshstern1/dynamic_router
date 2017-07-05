@@ -154,12 +154,12 @@ module router#(
     wire [FLIT_SIZE - 1 : 0] in_yneg_RC;
     wire [FLIT_SIZE - 1 : 0] in_zneg_RC;
 
-    wire [input_Q_size - 1 : 0] in_xpos_usedw;
-    wire [input_Q_size - 1 : 0] in_ypos_usedw;
-    wire [input_Q_size - 1 : 0] in_zpos_usedw;
-    wire [input_Q_size - 1 : 0] in_xneg_usedw;
-    wire [input_Q_size - 1 : 0] in_yneg_usedw;
-    wire [input_Q_size - 1 : 0] in_zneg_usedw;
+    wire [FLIT_SIZE - 1 : 0] in_xpos_usedw;
+    wire [FLIT_SIZE - 1 : 0] in_ypos_usedw;
+    wire [FLIT_SIZE - 1 : 0] in_zpos_usedw;
+    wire [FLIT_SIZE - 1 : 0] in_xneg_usedw;
+    wire [FLIT_SIZE - 1 : 0] in_yneg_usedw;
+    wire [FLIT_SIZE - 1 : 0] in_zneg_usedw;
 
 
     
@@ -768,12 +768,12 @@ module router#(
 
 
 
-    assign out_xpos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, xpos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : xpos_out_ST;
-    assign out_ypos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, ypos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : ypos_out_ST;
-    assign out_zpos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, zpos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : zpos_out_ST;
-    assign out_xneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, xneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : xneg_out_ST;
-    assign out_yneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, yneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : yneg_out_ST;
-    assign out_zneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, zneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : zneg_out_ST;
+    assign out_xpos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, xpos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (flit_valid_ST[0] ? xpos_out_ST : inject_xpos);
+    assign out_ypos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, ypos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (flit_valid_ST[1] ? ypos_out_ST : inject_ypos);
+    assign out_zpos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, zpos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (flit_valid_ST[2] ? zpos_out_ST : inject_zpos);
+    assign out_xneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, xneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (flit_valid_ST[3] ? xneg_out_ST : inject_xneg);
+    assign out_yneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, yneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (flit_valid_ST[4] ? yneg_out_ST : inject_yneg);
+    assign out_zneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, zneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (flit_valid_ST[5] ? zneg_out_ST : inject_zneg);
 
     
     assign inject_xpos_avail = xpos_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~flit_valid_ST[0]);

@@ -4,7 +4,7 @@
 //Start date: Feb 10th 2015
 //
 //`define SIM
-`define SYNTH
+//`define SYNTH
 module buffer
 #(
     parameter buffer_depth=8,
@@ -132,14 +132,17 @@ module buffer
         end
     end
 
+
+    reg [buffer_width - 1 : 0] usedw_reg;
     always@(*) begin
         if(tail >= head) begin
-            usedw = tail - head;
+            usedw_reg = tail - head;
         end
         else begin
-            usedw = buffer_depth - head + tail;
+            usedw_reg = buffer_depth - head + tail;
         end
     end
+    assign usedw = usedw_reg;
 
 `endif
 

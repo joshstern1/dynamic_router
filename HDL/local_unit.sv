@@ -587,11 +587,11 @@ module local_unit#(
             injection_control_counter <= 0;
         end
         else begin
-            injection_control_counter <= (injection_control_counter == injection_rate - 1) ? 0 : injection_control_counter + 1;
+            injection_control_counter <= (injection_control_counter == injection_rate + packet_num - 1) ? 0 : injection_control_counter + 1;
         end
     end
 
-    assign injection_enable = (injection_control_counter == injection_rate - 1) && packet_counter < packet_num;
+    assign injection_enable = (injection_control_counter >= injection_rate);
 
 
     assign app_xpos_inject_valid = injection_enable;
@@ -621,75 +621,90 @@ module local_unit#(
 
     always@(*) begin
         if(flit_counter == 1) begin
-            app_xpos_inject = {HEAD_FLIT, 1'b0, cur_z, cur_y, nxt_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 66'hEAD};
+            app_xpos_inject = {HEAD_FLIT, 1'b0, cur_z, cur_y, nxt_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
-        else if(flit_counter == packet_num - 1) begin
-            app_xpos_inject = {TAIL_FLIT, 1'b0, cur_z, cur_y, nxt_x, 4'd0, 108'hA11};
+        else if(flit_counter == packet_size - 1) begin
+            app_xpos_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
-            app_xpos_inject = {BODY_FLIT, 1'b0, cur_z, cur_y, nxt_x, 4'd0, 108'hD};
+            app_xpos_inject = {BODY_FLIT, 125'hD};
         end
     end 
     always@(*) begin
         if(flit_counter == 1) begin
-            app_ypos_inject = {HEAD_FLIT, 1'b0, cur_z, nxt_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 66'hEAD};
+            app_ypos_inject = {HEAD_FLIT, 1'b0, cur_z, nxt_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
         else if(flit_counter == packet_num - 1) begin
-            app_ypos_inject = {TAIL_FLIT, 1'b0, cur_z, nxt_y, nxt_x, 4'd0, 108'hA11};
+            app_ypos_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
-            app_ypos_inject = {BODY_FLIT, 1'b0, cur_z, nxt_y, nxt_x, 4'd0, 108'hD};
+            app_ypos_inject = {BODY_FLIT, 125'hD};
         end
     end
     always@(*) begin
         if(flit_counter == 1) begin
-            app_zpos_inject = {HEAD_FLIT, 1'b0, nxt_z, cur_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 66'hEAD};
+            app_zpos_inject = {HEAD_FLIT, 1'b0, nxt_z, cur_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
         else if(flit_counter == packet_num - 1) begin
-            app_zpos_inject = {TAIL_FLIT, 1'b0, nxt_z, cur_y, nxt_x, 4'd0, 108'hA11};
+            app_zpos_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
-            app_zpos_inject = {BODY_FLIT, 1'b0, nxt_z, cur_y, nxt_x, 4'd0, 108'hD};
+            app_zpos_inject = {BODY_FLIT, 125'hD};
         end
     end
 
     always@(*) begin
         if(flit_counter == 1) begin
-            app_xneg_inject = {HEAD_FLIT, 1'b1, cur_z, cur_y, pre_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 66'hEAD};
+            app_xneg_inject = {HEAD_FLIT, 1'b1, cur_z, cur_y, pre_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
         else if(flit_counter == packet_num - 1) begin
-            app_xneg_inject = {TAIL_FLIT, 1'b1, cur_z, cur_y, pre_x, 4'd1, 108'hA11};
+            app_xneg_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
-            app_xneg_inject = {BODY_FLIT, 1'b1, cur_z, cur_y, nxt_x, 4'd1, 108'hD};
+            app_xneg_inject = {BODY_FLIT, 125'hD};
         end
     end 
     always@(*) begin
         if(flit_counter == 1) begin
-            app_yneg_inject = {HEAD_FLIT, 1'b1, cur_z, pre_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 66'hEAD};    
+            app_yneg_inject = {HEAD_FLIT, 1'b1, cur_z, pre_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};    
         end
         else if(flit_counter == packet_num - 1) begin
-            app_yneg_inject = {TAIL_FLIT, 1'b1, cur_z, pre_y, cur_x, 4'd1, 108'hA11};
+            app_yneg_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
-            app_yneg_inject = {BODY_FLIT, 1'b1, cur_z, pre_y, cur_x, 4'd1, 108'hD};
+            app_yneg_inject = {BODY_FLIT, 125'hD};
         end
     end 
     always@(*) begin
         if(flit_counter == 1) begin
-            app_zneg_inject = {HEAD_FLIT, 1'b1, pre_z, cur_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 66'hEAD};
+            app_zneg_inject = {HEAD_FLIT, 1'b1, pre_z, cur_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
         else if(flit_counter == packet_num - 1) begin
-            app_zneg_inject = {TAIL_FLIT, 1'b1, pre_z, cur_y, cur_x, 4'd1, 108'hA11};
+            app_zneg_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
-            app_zneg_inject = {BODY_FLIT, 1'b1, pre_z, cur_y, cur_x, 4'd1, 108'hD};
+            app_zneg_inject = {BODY_FLIT, 125'hD};
         end
     end 
 `endif
 
 
     //instantiate 6 inject buffers
+    wire xpos_inject_buffer_empty;
+    wire ypos_inject_buffer_empty;
+    wire zpos_inject_buffer_empty;
+    wire xneg_inject_buffer_empty;
+    wire yneg_inject_buffer_empty;
+    wire zneg_inject_buffer_empty;
+
+    assign inject_xpos_valid = ~xpos_inject_buffer_empty;
+    assign inject_ypos_valid = ~ypos_inject_buffer_empty;
+    assign inject_zpos_valid = ~zpos_inject_buffer_empty;
+    assign inject_xneg_valid = ~xneg_inject_buffer_empty;
+    assign inject_yneg_valid = ~yneg_inject_buffer_empty;
+    assign inject_zneg_valid = ~zneg_inject_buffer_empty;
+
+
 
     buffer#(
         .buffer_depth(64),
@@ -701,7 +716,7 @@ module local_unit#(
         .produce(app_xpos_inject_valid),
         .consume(inject_xpos_avail),
         .full(),
-        .empty(),
+        .empty(xpos_inject_buffer_empty),
         .out(inject_xpos),
         .usedw()
     );
@@ -716,7 +731,7 @@ module local_unit#(
         .produce(app_ypos_inject_valid),
         .consume(inject_ypos_avail),
         .full(),
-        .empty(),
+        .empty(ypos_inject_buffer_empty),
         .out(inject_ypos),
         .usedw()
     );
@@ -730,7 +745,7 @@ module local_unit#(
         .produce(app_zpos_inject_valid),
         .consume(inject_zpos_avail),
         .full(),
-        .empty(),
+        .empty(zpos_inject_buffer_empty),
         .out(inject_zpos),
         .usedw()
     );
@@ -744,7 +759,7 @@ module local_unit#(
         .produce(app_xneg_inject_valid),
         .consume(inject_xneg_avail),
         .full(),
-        .empty(),
+        .empty(xneg_inject_buffer_empty),
         .out(inject_xneg),
         .usedw()
     );
@@ -758,7 +773,7 @@ module local_unit#(
         .produce(app_yneg_inject_valid),
         .consume(inject_yneg_avail),
         .full(),
-        .empty(),
+        .empty(yneg_inject_buffer_empty),
         .out(inject_yneg),
         .usedw()
     );
@@ -772,7 +787,7 @@ module local_unit#(
         .produce(app_zneg_inject_valid),
         .consume(inject_zneg_avail),
         .full(),
-        .empty(),
+        .empty(zneg_inject_buffer_empty),
         .out(inject_zneg),
         .usedw()
     );
