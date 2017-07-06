@@ -8,7 +8,6 @@
 	always #5 clk=~clk;
 
 	network    net0(clk,rst);
-
 	initial begin
 		clk=0;
 		rst=1;

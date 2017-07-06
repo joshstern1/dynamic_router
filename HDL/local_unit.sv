@@ -131,7 +131,7 @@ module local_unit#(
                             xpos_flit_counter <= xpos_flit_counter + 1;
                         end
                         else if(eject_xpos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
-                            xpos_flit_counter <= xpos_flit_counter + 1;
+                            xpos_flit_counter <= 0;
                             if(xpos_flit_counter < packet_size - 1) begin
                                 xpos_check_state <= ERROR;
                                 xpos_error_code <= ERR_FLIT_MISSING;
@@ -207,7 +207,7 @@ module local_unit#(
                             ypos_flit_counter <= ypos_flit_counter + 1;
                         end
                         else if(eject_ypos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
-                            ypos_flit_counter <= ypos_flit_counter + 1;
+                            ypos_flit_counter <= 0;
                             if(ypos_flit_counter < packet_size - 1) begin
                                 ypos_check_state <= ERROR;
                                 ypos_error_code <= ERR_FLIT_MISSING;
@@ -284,7 +284,7 @@ module local_unit#(
                             zpos_flit_counter <= zpos_flit_counter + 1;
                         end
                         else if(eject_zpos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
-                            zpos_flit_counter <= zpos_flit_counter + 1;
+                            zpos_flit_counter <= 0;
                             if(zpos_flit_counter < packet_size - 1) begin
                                 zpos_check_state <= ERROR;
                                 zpos_error_code <= ERR_FLIT_MISSING;
@@ -361,7 +361,7 @@ module local_unit#(
                             xneg_flit_counter <= xneg_flit_counter + 1;
                         end
                         else if(eject_xneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
-                            xneg_flit_counter <= xneg_flit_counter + 1;
+                            xneg_flit_counter <= 0;
                             if(xneg_flit_counter < packet_size - 1) begin
                                 xneg_check_state <= ERROR;
                                 xneg_error_code <= ERR_FLIT_MISSING;
@@ -437,7 +437,7 @@ module local_unit#(
                             yneg_flit_counter <= yneg_flit_counter + 1;
                         end
                         else if(eject_yneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
-                            yneg_flit_counter <= yneg_flit_counter + 1;
+                            yneg_flit_counter <= 0;
                             if(yneg_flit_counter < packet_size - 1) begin
                                 yneg_check_state <= ERROR;
                                 yneg_error_code <= ERR_FLIT_MISSING;
@@ -513,7 +513,7 @@ module local_unit#(
                             zneg_flit_counter <= zneg_flit_counter + 1;
                         end
                         else if(eject_zneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
-                            zneg_flit_counter <= zneg_flit_counter + 1;
+                            zneg_flit_counter <= 0;
                             if(zneg_flit_counter < packet_size - 1) begin
                                 zneg_check_state <= ERROR;
                                 zneg_error_code <= ERR_FLIT_MISSING;
@@ -559,8 +559,8 @@ module local_unit#(
             packet_counter <= 0;
         end
         else begin
-            if(injection_enable) begin
-                packet_counter <= (packet_counter < packet_num) ? packet_counter + 1 : 0;
+            if(flit_counter == packet_size) begin
+                packet_counter <= (packet_counter < packet_num) ? packet_counter + 1 : packet_num;
             end
         end
     end
@@ -571,12 +571,12 @@ module local_unit#(
         end
         else begin
             if(flit_counter == 0) begin
-                if(injection_enable) begin
+                if(injection_control_counter == injection_rate - 1) begin
                     flit_counter <= 1;
                 end
             end
             else begin
-                flit_counter <= flit_counter < packet_size ? flit_counter + 1 : 0;
+                flit_counter <= flit_counter <= packet_size ? flit_counter + 1 : 0;
             end
         end
     end
@@ -587,11 +587,11 @@ module local_unit#(
             injection_control_counter <= 0;
         end
         else begin
-            injection_control_counter <= (injection_control_counter == injection_rate + packet_num - 1) ? 0 : injection_control_counter + 1;
+            injection_control_counter <= (injection_control_counter == injection_rate + packet_size - 1) ? 0 : injection_control_counter + 1;
         end
     end
 
-    assign injection_enable = (injection_control_counter >= injection_rate);
+    assign injection_enable = (flit_counter >= 1 && flit_counter <= packet_size && packet_counter < packet_num);
 
 
     assign app_xpos_inject_valid = injection_enable;
@@ -611,19 +611,19 @@ module local_unit#(
     wire [2 : 0] pre_z;
     wire [2 : 0] nxt_z;
 
-    assign nxt_x = cur_x != XSIZE - 1 ? cur_x + 1 : 0;
-    assign nxt_y = cur_y != YSIZE - 1 ? cur_y + 1 : 0;
-    assign nxt_z = cur_z != ZSIZE - 1 ? cur_z + 1 : 0;
-    assign pre_x = cur_x != 0 ? cur_x - 1 : XSIZE - 1;
-    assign pre_y = cur_y != 0 ? cur_y - 1 : XSIZE - 1;
-    assign pre_z = cur_z != 0 ? cur_z - 1 : XSIZE - 1;
+    assign nxt_x = cur_x < XSIZE - 1 ? cur_x + 1 : 0;
+    assign nxt_y = cur_y < YSIZE - 1 ? cur_y + 1 : 0;
+    assign nxt_z = cur_z < ZSIZE - 1 ? cur_z + 1 : 0;
+    assign pre_x = cur_x > 0 ? cur_x - 1 : XSIZE - 1;
+    assign pre_y = cur_y > 0 ? cur_y - 1 : YSIZE - 1;
+    assign pre_z = cur_z > 0 ? cur_z - 1 : ZSIZE - 1;
 
 
     always@(*) begin
         if(flit_counter == 1) begin
             app_xpos_inject = {HEAD_FLIT, 1'b0, cur_z, cur_y, nxt_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
-        else if(flit_counter == packet_size - 1) begin
+        else if(flit_counter == packet_size) begin
             app_xpos_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
@@ -634,7 +634,7 @@ module local_unit#(
         if(flit_counter == 1) begin
             app_ypos_inject = {HEAD_FLIT, 1'b0, cur_z, nxt_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
-        else if(flit_counter == packet_num - 1) begin
+        else if(flit_counter == packet_size) begin
             app_ypos_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
@@ -645,7 +645,7 @@ module local_unit#(
         if(flit_counter == 1) begin
             app_zpos_inject = {HEAD_FLIT, 1'b0, nxt_z, cur_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
-        else if(flit_counter == packet_num - 1) begin
+        else if(flit_counter == packet_size) begin
             app_zpos_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
@@ -657,7 +657,7 @@ module local_unit#(
         if(flit_counter == 1) begin
             app_xneg_inject = {HEAD_FLIT, 1'b1, cur_z, cur_y, pre_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
-        else if(flit_counter == packet_num - 1) begin
+        else if(flit_counter == packet_size) begin
             app_xneg_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
@@ -668,7 +668,7 @@ module local_unit#(
         if(flit_counter == 1) begin
             app_yneg_inject = {HEAD_FLIT, 1'b1, cur_z, pre_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};    
         end
-        else if(flit_counter == packet_num - 1) begin
+        else if(flit_counter == packet_size) begin
             app_yneg_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
@@ -679,7 +679,7 @@ module local_unit#(
         if(flit_counter == 1) begin
             app_zneg_inject = {HEAD_FLIT, 1'b1, pre_z, cur_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
-        else if(flit_counter == packet_num - 1) begin
+        else if(flit_counter == packet_size) begin
             app_zneg_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin

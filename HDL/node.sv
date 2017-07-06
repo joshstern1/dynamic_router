@@ -151,7 +151,7 @@ module node
         .inject_xpos(inject_xpos),
         .inject_ypos(inject_ypos),
         .inject_zpos(inject_zpos),
-        .inject_xneg(inject_zneg),
+        .inject_xneg(inject_xneg),
         .inject_yneg(inject_yneg),
         .inject_zneg(inject_zneg),
         .inject_xpos_valid(inject_xpos_valid),

@@ -108,7 +108,8 @@ module buffer
     end
 
     always@(posedge clk) begin
-        fifo[tail] <= in;
+        if(produce)
+            fifo[tail] <= in;
     end
 
 

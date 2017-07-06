@@ -102,9 +102,9 @@ def node_gen(xsize,ysize,zsize):
             for k in range(0,zsize):
                 tag="_"+str(i)+"_"+str(j)+"_"+str(k)
                 tmp='''    node#(
-        .cur_x('''+str(i)+'''),
-        .cur_y('''+str(j)+'''),
-        .cur_z('''+str(k)+''')
+        .cur_x(3'd'''+str(i)+'''),
+        .cur_y(3'd'''+str(j)+'''),
+        .cur_z(3'd'''+str(k)+''')
         )'''
                 tmp+="n"+tag+'''(
         .clk(clk),

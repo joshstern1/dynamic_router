@@ -175,22 +175,22 @@ module router#(
         end
         else begin
             if(in_xpos_valid && in_xpos_is_credit) begin
-                xpos_downstream_credits <= in_xpos[FLIT_SIZE / 2 - 1]; //only need the payload
+                xpos_downstream_credits <= in_xpos[FLIT_SIZE / 2 - 1 : 0]; //only need the payload
             end
             if(in_ypos_valid && in_ypos_is_credit) begin
-                ypos_downstream_credits <= in_ypos[FLIT_SIZE / 2 - 1]; //only need the payload
+                ypos_downstream_credits <= in_ypos[FLIT_SIZE / 2 - 1 : 0]; //only need the payload
             end
             if(in_zpos_valid && in_zpos_is_credit) begin
-                zpos_downstream_credits <= in_zpos[FLIT_SIZE / 2 - 1]; //only need the payload
+                zpos_downstream_credits <= in_zpos[FLIT_SIZE / 2 - 1 : 0]; //only need the payload
             end
             if(in_xneg_valid && in_xneg_is_credit) begin
-                xneg_downstream_credits <= in_xneg[FLIT_SIZE / 2 - 1]; //only need the payload
+                xneg_downstream_credits <= in_xneg[FLIT_SIZE / 2 - 1 : 0]; //only need the payload
             end
             if(in_yneg_valid && in_yneg_is_credit) begin
-                yneg_downstream_credits <= in_yneg[FLIT_SIZE / 2 - 1]; //only need the payload
+                yneg_downstream_credits <= in_yneg[FLIT_SIZE / 2 - 1 : 0]; //only need the payload
             end
             if(in_zneg_valid && in_zneg_is_credit) begin
-                zneg_downstream_credits <= in_zneg[FLIT_SIZE / 2 - 1]; //only need the payload
+                zneg_downstream_credits <= in_zneg[FLIT_SIZE / 2 - 1 : 0]; //only need the payload
             end
         end
     end

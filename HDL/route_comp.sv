@@ -38,10 +38,8 @@ module route_comp
     reg turn;
 
     reg flit_out_tmp;
-    reg ejecting;
+    wire ejecting;
 
-
-    assign eject_enable = ejecting;
 
     assign dst_z = flit_before_RC[DST_ZPOS : DST_ZPOS - ZW + 1];
     assign dst_y = flit_before_RC[DST_YPOS : DST_YPOS - YW + 1];
@@ -122,25 +120,58 @@ module route_comp
         end
     end
 
+
+
+    reg ejecting_started;
+
+    wire start_ejecting;
+
+    wire single_ejecting;
+
+    wire stop_ejecting;
+    reg stop_ejecting_reg;
+
+    reg ejecting_delay;
+
+    assign start_ejecting = flit_valid_in && (flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) && dir == DIR_EJECT;
+
+    assign single_ejecting = flit_valid_in && (flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == SINGLE_FLIT) && dir == DIR_EJECT;
+
+
+    assign stop_ejecting = flit_valid_in && ((flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT));
+
+    always@(posedge clk) begin
+        stop_ejecting_reg <= stop_ejecting;
+    end
+
+    assign ejecting = single_ejecting || (start_ejecting || (ejecting_started && ~stop_ejecting_reg));
+
+    always@(posedge clk) begin
+        ejecting_delay <= ejecting;
+    end
+    reg flit_valid_in_reg;
+    assign eject_enable = ejecting_delay && flit_valid_in_reg;
+
+
     always@(posedge clk) begin
         if(rst) begin 
-            ejecting <= 0;
+            ejecting_started <= 0;
         end
         else begin
-            if(flit_valid_in && ((flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) || (flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == SINGLE_FLIT)) && dir == DIR_EJECT) begin
-                ejecting <= 1;
+            if(start_ejecting) begin
+                ejecting_started <= 1;
             end
             else begin
-                if(ejecting) begin
-                    if(flit_valid_in && ((flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) || (flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == SINGLE_FLIT)) && dir != DIR_EJECT) begin
-                        ejecting <= 0;
+                if(ejecting_started) begin
+                    if(stop_ejecting) begin
+                        ejecting_started <= 0;
                     end
                 end
             end
         end
     end
 
-    reg flit_valid_in_reg;
+
 
     always@(posedge clk) begin
         if(~stall) begin
@@ -148,7 +179,7 @@ module route_comp
         end
     end
 
-    assign flit_valid_out = flit_valid_in_reg && ~ejecting;
+    assign flit_valid_out = flit_valid_in_reg && ~eject_enable;
 
 
 

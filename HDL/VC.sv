@@ -9,7 +9,7 @@ module VC
     output reg [3:0] O, //Output VC: After virtual-channel allocation is completed for a packet, this field holds the output virtual channel of port R assigned to the packet.
     output reg [FLIT_SIZE - 1:0] P, //the number of the empty slots in VC
     output vc_full,
-	 input [2:0] C,//Credit count: The number of credits (available downstream flit buffers) for output virtual channel O on output port R.
+	 input C,//Credit count: The number of credits (available downstream flit buffers) for output virtual channel O on output port R.
     
     input [FLIT_SIZE-1:0] flit_in,
     input valid_in,
@@ -29,7 +29,7 @@ module VC
     wire buffer_consume;
     wire buffer_full;
     wire buffer_empty;
-    wire [FLIT_SIZE - 1 : 0] buffer_usedw;
+    wire [FLIT_SIZE + ROUTE_LEN - 1 : 0] buffer_usedw;
     
     wire in_is_head;
 
@@ -79,7 +79,7 @@ module VC
                     end
                 end
                 ACTIVE: begin  // the flit_out has a granted OVC, buffer might be empty
-                    if(C >= 1) begin
+                    if(C) begin
                         if(buffer_usedw == 1) begin
                             if(in_is_head || in_is_single) begin
                                 G <= WAITING_FOR_OVC;
@@ -169,7 +169,7 @@ module VC
         .usedw      (buffer_usedw)
     );
 
-    assign buffer_consume = (G == ACTIVE) && (C >= 1);
+    assign buffer_consume = (G == ACTIVE) && (C);
 
     assign buffer_produce = valid_in;
 

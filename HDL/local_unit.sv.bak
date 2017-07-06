@@ -587,7 +587,7 @@ module local_unit#(
             injection_control_counter <= 0;
         end
         else begin
-            injection_control_counter <= (injection_control_counter == injection_rate + packet_num - 1) ? 0 : injection_control_counter + 1;
+            injection_control_counter <= (injection_control_counter == injection_rate + packet_size - 1) ? 0 : injection_control_counter + 1;
         end
     end
 
@@ -623,11 +623,11 @@ module local_unit#(
         if(flit_counter == 1) begin
             app_xpos_inject = {HEAD_FLIT, 1'b0, cur_z, cur_y, nxt_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
-        else if(flit_counter == packet_num - 1) begin
-            app_xpos_inject = {TAIL_FLIT, 1'b0, cur_z, cur_y, nxt_x, 4'd0, 111'hA11};
+        else if(flit_counter == packet_size - 1) begin
+            app_xpos_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
-            app_xpos_inject = {BODY_FLIT, 1'b0, cur_z, cur_y, nxt_x, 4'd0, 111'hD};
+            app_xpos_inject = {BODY_FLIT, 125'hD};
         end
     end 
     always@(*) begin
@@ -635,10 +635,10 @@ module local_unit#(
             app_ypos_inject = {HEAD_FLIT, 1'b0, cur_z, nxt_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
         else if(flit_counter == packet_num - 1) begin
-            app_ypos_inject = {TAIL_FLIT, 1'b0, cur_z, nxt_y, nxt_x, 4'd0, 111'hA11};
+            app_ypos_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
-            app_ypos_inject = {BODY_FLIT, 1'b0, cur_z, nxt_y, nxt_x, 4'd0, 111'hD};
+            app_ypos_inject = {BODY_FLIT, 125'hD};
         end
     end
     always@(*) begin
@@ -646,10 +646,10 @@ module local_unit#(
             app_zpos_inject = {HEAD_FLIT, 1'b0, nxt_z, cur_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
         else if(flit_counter == packet_num - 1) begin
-            app_zpos_inject = {TAIL_FLIT, 1'b0, nxt_z, cur_y, nxt_x, 4'd0, 111'hA11};
+            app_zpos_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
-            app_zpos_inject = {BODY_FLIT, 1'b0, nxt_z, cur_y, nxt_x, 4'd0, 111'hD};
+            app_zpos_inject = {BODY_FLIT, 125'hD};
         end
     end
 
@@ -658,10 +658,10 @@ module local_unit#(
             app_xneg_inject = {HEAD_FLIT, 1'b1, cur_z, cur_y, pre_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
         else if(flit_counter == packet_num - 1) begin
-            app_xneg_inject = {TAIL_FLIT, 1'b1, cur_z, cur_y, pre_x, 4'd1, 111'hA11};
+            app_xneg_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
-            app_xneg_inject = {BODY_FLIT, 1'b1, cur_z, cur_y, nxt_x, 4'd1, 111'hD};
+            app_xneg_inject = {BODY_FLIT, 125'hD};
         end
     end 
     always@(*) begin
@@ -669,10 +669,10 @@ module local_unit#(
             app_yneg_inject = {HEAD_FLIT, 1'b1, cur_z, pre_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};    
         end
         else if(flit_counter == packet_num - 1) begin
-            app_yneg_inject = {TAIL_FLIT, 1'b1, cur_z, pre_y, cur_x, 4'd1, 111'hA11};
+            app_yneg_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
-            app_yneg_inject = {BODY_FLIT, 1'b1, cur_z, pre_y, cur_x, 4'd1, 111'hD};
+            app_yneg_inject = {BODY_FLIT, 125'hD};
         end
     end 
     always@(*) begin
@@ -680,10 +680,10 @@ module local_unit#(
             app_zneg_inject = {HEAD_FLIT, 1'b1, pre_z, cur_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
         else if(flit_counter == packet_num - 1) begin
-            app_zneg_inject = {TAIL_FLIT, 1'b1, pre_z, cur_y, cur_x, 4'd1, 111'hA11};
+            app_zneg_inject = {TAIL_FLIT, 125'hA11};
         end
         else begin
-            app_zneg_inject = {BODY_FLIT, 1'b1, pre_z, cur_y, cur_x, 4'd1, 111'hD};
+            app_zneg_inject = {BODY_FLIT, 125'hD};
         end
     end 
 `endif
