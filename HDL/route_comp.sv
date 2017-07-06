@@ -7,7 +7,7 @@
 //
 //the |cmp| field will be the priority field for the switch allocation
 //if the SA policy is farthest first, this will be the distance from the destination node to the current node, if the SA policy is the oldest first, this will be the time stamp when this packet is sent
-
+`define FARTHEST_FIRST
 module route_comp
 #(
     parameter cur_x = 0,
@@ -50,8 +50,8 @@ module route_comp
     //the VC_class needs to be changed when either crossing the dateline or changing dimension
 
     always@(*) begin
-        if(dir_in != dir_out + 3 && dir_out != dir_in + 3) begin
-            if(dir_out == DIR_XPOS || dir_out == DIR_YPOS || dir_out == DIR_ZPOS) begin
+        if(dir_in != dir + 3 && dir != dir_in + 3) begin
+            if(dir == DIR_XPOS || dir == DIR_YPOS || dir == DIR_ZPOS) begin
                 new_VC_class = 0;
             end
             else begin 
@@ -59,7 +59,7 @@ module route_comp
             end
         end
         else begin 
-            case(dir_out)
+            case(dir)
                 DIR_XPOS: begin
                     if(cur_x == 0) begin
                         new_VC_class = 1;
@@ -182,7 +182,10 @@ module route_comp
     assign flit_valid_out = flit_valid_in_reg && ~eject_enable;
 
 
-
+`ifdef FARTHEST_FIRST
+    wire [CMP_LEN - 1 : 0] nxt_priority_field;
+    assign nxt_priority_field = flit_before_RC[CMP_POS : CMP_POS - CMP_LEN + 1] - 1;
+`endif
     
 
     always@(posedge clk) begin
@@ -191,7 +194,11 @@ module route_comp
         end
         else if(~ejecting) begin
             if(~ stall) begin
+`ifdef FARTHEST_FIRST
+                flit_after_RC <= {flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN], new_VC_class, flit_before_RC[DST_ZPOS : CMP_POS + 1], nxt_priority_field, flit_before_RC[CMP_POS - CMP_LEN : 0]};
+`else
                 flit_after_RC <= {flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN], new_VC_class, flit_before_RC[FLIT_SIZE - HEADER_LEN - 2  : 0]};
+`endif
                 if((flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) || (flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == SINGLE_FLIT))begin
                     dir_out<=dir;
                 end

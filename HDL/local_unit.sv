@@ -1,7 +1,7 @@
 
 `include "para.sv"
-`define NEAREST_NEIGHBOR
-
+//`define NEAREST_NEIGHBOR
+`define THREE_HOP_DIAGONAL
 module local_unit#(
     parameter cur_x = 3'd0,
     parameter cur_y = 3'd0,
@@ -43,9 +43,9 @@ module local_unit#(
 
 );
 
-    parameter injection_rate=10'd30; //injection rate means inject one packet per injection_rate cycles
+    parameter injection_rate=10'd0; //injection rate means inject one packet per injection_rate cycles
 
-    parameter packet_size = 16; //16 flit in one packet
+    parameter packet_size = 16; //number of flits in one packet
     
     parameter packet_num = 10;
 
@@ -553,6 +553,10 @@ module local_unit#(
     assign all_pckts_rcvd = (xpos_pckt_counter + ypos_pckt_counter + zpos_pckt_counter + xneg_pckt_counter + yneg_pckt_counter + zneg_pckt_counter == packet_num * 6); 
 `endif
 
+`ifdef THREE_HOP_DIAGONAL
+    assign all_pckts_rcvd = (xpos_pckt_counter + ypos_pckt_counter + zpos_pckt_counter + xneg_pckt_counter + yneg_pckt_counter + zneg_pckt_counter == packet_num * 6); 
+`endif
+
 
     always@(posedge clk) begin
         if(rst) begin
@@ -571,12 +575,15 @@ module local_unit#(
         end
         else begin
             if(flit_counter == 0) begin
-                if(injection_control_counter == injection_rate - 1) begin
+                if(injection_rate == 0) begin
+                    flit_counter <= 1;
+                end
+                else if(injection_control_counter == injection_rate - 1) begin
                     flit_counter <= 1;
                 end
             end
             else begin
-                flit_counter <= flit_counter <= packet_size ? flit_counter + 1 : 0;
+                flit_counter <= flit_counter < packet_size ? flit_counter + 1 : (injection_rate == 0);
             end
         end
     end
@@ -601,7 +608,9 @@ module local_unit#(
     assign app_yneg_inject_valid = injection_enable;
     assign app_zneg_inject_valid = injection_enable;
 
-`ifdef NEAREST_NEIGHBOR
+
+
+
 
     wire [2 : 0] nxt_x;
     wire [2 : 0] pre_x;
@@ -619,20 +628,22 @@ module local_unit#(
     assign pre_z = cur_z > 0 ? cur_z - 1 : ZSIZE - 1;
 
 
+
+`ifdef THREE_HOP_DIAGONAL
     always@(*) begin
         if(flit_counter == 1) begin
-            app_xpos_inject = {HEAD_FLIT, 1'b0, cur_z, cur_y, nxt_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+            app_xpos_inject = {HEAD_FLIT, 1'b0, nxt_z, nxt_y, nxt_x, 4'd3, cur_z, cur_y, cur_x, packet_counter, 86'hBEAD};
         end
         else if(flit_counter == packet_size) begin
-            app_xpos_inject = {TAIL_FLIT, 125'hA11};
+            app_xpos_inject = {TAIL_FLIT, 125'hBA11};
         end
         else begin
-            app_xpos_inject = {BODY_FLIT, 125'hD};
+            app_xpos_inject = {BODY_FLIT, 125'hBEEF};
         end
     end 
     always@(*) begin
         if(flit_counter == 1) begin
-            app_ypos_inject = {HEAD_FLIT, 1'b0, cur_z, nxt_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+            app_ypos_inject = {HEAD_FLIT, 1'b0, nxt_z, nxt_y, pre_x, 4'd3, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
         else if(flit_counter == packet_size) begin
             app_ypos_inject = {TAIL_FLIT, 125'hA11};
@@ -643,7 +654,7 @@ module local_unit#(
     end
     always@(*) begin
         if(flit_counter == 1) begin
-            app_zpos_inject = {HEAD_FLIT, 1'b0, nxt_z, cur_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+            app_zpos_inject = {HEAD_FLIT, 1'b0, nxt_z, pre_y, nxt_x, 4'd3, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
         else if(flit_counter == packet_size) begin
             app_zpos_inject = {TAIL_FLIT, 125'hA11};
@@ -655,7 +666,7 @@ module local_unit#(
 
     always@(*) begin
         if(flit_counter == 1) begin
-            app_xneg_inject = {HEAD_FLIT, 1'b1, cur_z, cur_y, pre_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+            app_xneg_inject = {HEAD_FLIT, 1'b1, nxt_z, pre_y, pre_x, 4'd3, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
         else if(flit_counter == packet_size) begin
             app_xneg_inject = {TAIL_FLIT, 125'hA11};
@@ -666,7 +677,7 @@ module local_unit#(
     end 
     always@(*) begin
         if(flit_counter == 1) begin
-            app_yneg_inject = {HEAD_FLIT, 1'b1, cur_z, pre_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};    
+            app_yneg_inject = {HEAD_FLIT, 1'b1, pre_z, pre_y, pre_x, 4'd3, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};    
         end
         else if(flit_counter == packet_size) begin
             app_yneg_inject = {TAIL_FLIT, 125'hA11};
@@ -677,6 +688,96 @@ module local_unit#(
     end 
     always@(*) begin
         if(flit_counter == 1) begin
+            app_zneg_inject = {HEAD_FLIT, 1'b1, pre_z, nxt_y, pre_x, 4'd3, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+        end
+        else if(flit_counter == packet_size) begin
+            app_zneg_inject = {TAIL_FLIT, 125'hA11};
+        end
+        else begin
+            app_zneg_inject = {BODY_FLIT, 125'hD};
+        end
+    end 
+`endif
+    
+`ifdef NEAREST_NEIGHBOR
+
+
+    always@(*) begin
+        if(packet_size == 1) begin
+            app_xpos_inject = {SINGLE_FLIT, 1'b0, cur_z, cur_y, nxt_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+        end
+        else if(flit_counter == 1) begin
+            app_xpos_inject = {HEAD_FLIT, 1'b0, cur_z, cur_y, nxt_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+        end
+        else if(flit_counter == packet_size) begin
+            app_xpos_inject = {TAIL_FLIT, 125'hA11};
+        end
+        else begin
+            app_xpos_inject = {BODY_FLIT, 125'hD};
+        end
+    end 
+    always@(*) begin
+        if(packet_size == 1) begin
+            app_ypos_inject = {SINGLE_FLIT, 1'b0, cur_z, nxt_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+        end
+        else if(flit_counter == 1) begin
+            app_ypos_inject = {HEAD_FLIT, 1'b0, cur_z, nxt_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+        end
+        else if(flit_counter == packet_size) begin
+            app_ypos_inject = {TAIL_FLIT, 125'hA11};
+        end
+        else begin
+            app_ypos_inject = {BODY_FLIT, 125'hD};
+        end
+    end
+    always@(*) begin
+        if(packet_size == 1) begin
+            app_zpos_inject = {SINGLE_FLIT, 1'b0, nxt_z, cur_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+        end
+        else if(flit_counter == 1) begin
+            app_zpos_inject = {HEAD_FLIT, 1'b0, nxt_z, cur_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+        end
+        else if(flit_counter == packet_size) begin
+            app_zpos_inject = {TAIL_FLIT, 125'hA11};
+        end
+        else begin
+            app_zpos_inject = {BODY_FLIT, 125'hD};
+        end
+    end
+
+    always@(*) begin
+        if(packet_size == 1) begin
+            app_xneg_inject = {SINGLE_FLIT, 1'b1, cur_z, cur_y, pre_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+        end
+        else if(flit_counter == 1) begin
+            app_xneg_inject = {HEAD_FLIT, 1'b1, cur_z, cur_y, pre_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+        end
+        else if(flit_counter == packet_size) begin
+            app_xneg_inject = {TAIL_FLIT, 125'hA11};
+        end
+        else begin
+            app_xneg_inject = {BODY_FLIT, 125'hD};
+        end
+    end 
+    always@(*) begin
+        if(packet_size == 1) begin
+            app_yneg_inject = {SINGLE_FLIT, 1'b1, cur_z, pre_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+        end
+        else if(flit_counter == 1) begin
+            app_yneg_inject = {HEAD_FLIT, 1'b1, cur_z, pre_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};    
+        end
+        else if(flit_counter == packet_size) begin
+            app_yneg_inject = {TAIL_FLIT, 125'hA11};
+        end
+        else begin
+            app_yneg_inject = {BODY_FLIT, 125'hD};
+        end
+    end 
+    always@(*) begin
+        if(packet_size == 1) begin
+            app_zneg_inject = {SINGLE_FLIT, 1'b1, pre_z, cur_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
+        end
+        else if(flit_counter == 1) begin
             app_zneg_inject = {HEAD_FLIT, 1'b1, pre_z, cur_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hEAD};
         end
         else if(flit_counter == packet_size) begin

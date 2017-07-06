@@ -44,7 +44,7 @@ module switch#(
 
     generate
         for(i = 0; i < M_IN; i = i + 1) begin: in_avail_gen
-            assign in_avail[i] = ({zneg_in_avail[i], yneg_in_avail[i], xneg_in_avail[i], zpos_in_avail[i], ypos_in_avail[i], xpos_in_avail[i]} & (1 << route_in[i * ROUTE_LEN + ROUTE_LEN - 1: i * ROUTE_LEN])) != 0;
+            assign in_avail[i] = ({zneg_in_avail[i], yneg_in_avail[i], xneg_in_avail[i], zpos_in_avail[i], ypos_in_avail[i], xpos_in_avail[i]} & (1 << ( route_in[i * ROUTE_LEN + ROUTE_LEN - 1: i * ROUTE_LEN] - 1))) != 0;
         end
     endgenerate
 

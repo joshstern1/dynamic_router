@@ -45,6 +45,7 @@ module N_to_1_reductor#(
         always@(posedge clk) begin
             if(rst) begin
                 in_slot[i] <= 0;
+                slot_valid[i] <= 0;
             end
             else begin
                 if(in_avail[i]) begin

@@ -414,6 +414,147 @@ module VC_allocator
 
 
     
+    reg xpos_in_middle_packet; //a reg record whether it is in the middle of a packet transmission
+    wire xpos_in_pckt_holding;
+    reg xpos_in_is_tail_reg;
+
+    always@(posedge clk) begin
+        xpos_in_is_tail_reg <= flit_xpos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT && port_valid[0];
+    end
+
+    always@(posedge clk) begin
+        if(rst) begin
+            xpos_in_middle_packet <= 0;
+        end
+        if(port_valid[0]) begin
+            if(flit_xpos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) begin
+                xpos_in_middle_packet <= 1;
+            end
+            else if(flit_xpos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
+                xpos_in_middle_packet <= 0;
+            end
+        end
+    end
+    assign xpos_in_pckt_holding = xpos_in_middle_packet && ~xpos_in_is_tail_reg;
+        
+    reg ypos_in_middle_packet; //a reg record whether it is in the middle of a packet transmission
+    wire ypos_in_pckt_holding;
+    reg ypos_in_is_tail_reg;
+
+    always@(posedge clk) begin
+        ypos_in_is_tail_reg <= flit_ypos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT && port_valid[0];
+    end
+
+    always@(posedge clk) begin
+        if(rst) begin
+            ypos_in_middle_packet <= 0;
+        end
+        if(port_valid[0]) begin
+            if(flit_ypos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) begin
+                ypos_in_middle_packet <= 1;
+            end
+            else if(flit_ypos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
+                ypos_in_middle_packet <= 0;
+            end
+        end
+    end
+    assign ypos_in_pckt_holding = ypos_in_middle_packet && ~ypos_in_is_tail_reg;
+
+    reg zpos_in_middle_packet; //a reg record whether it is in the middle of a packet transmission
+    wire zpos_in_pckt_holding;
+    reg zpos_in_is_tail_reg;
+
+    always@(posedge clk) begin
+        zpos_in_is_tail_reg <= flit_zpos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT && port_valid[0];
+    end
+
+    always@(posedge clk) begin
+        if(rst) begin
+            zpos_in_middle_packet <= 0;
+        end
+        if(port_valid[0]) begin
+            if(flit_zpos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) begin
+                zpos_in_middle_packet <= 1;
+            end
+            else if(flit_zpos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
+                zpos_in_middle_packet <= 0;
+            end
+        end
+    end
+    assign zpos_in_pckt_holding = zpos_in_middle_packet && ~zpos_in_is_tail_reg;
+
+
+    reg xneg_in_middle_packet; //a reg record whether it is in the middle of a packet transmission
+    wire xneg_in_pckt_holding;
+    reg xneg_in_is_tail_reg;
+
+    always@(posedge clk) begin
+        xneg_in_is_tail_reg <= flit_xneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT && port_valid[0];
+    end
+
+    always@(posedge clk) begin
+        if(rst) begin
+            xneg_in_middle_packet <= 0;
+        end
+        if(port_valid[0]) begin
+            if(flit_xneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) begin
+                xneg_in_middle_packet <= 1;
+            end
+            else if(flit_xneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
+                xneg_in_middle_packet <= 0;
+            end
+        end
+    end
+    assign xneg_in_pckt_holding = xneg_in_middle_packet && ~xneg_in_is_tail_reg;
+
+    reg yneg_in_middle_packet; //a reg record whether it is in the middle of a packet transmission
+    wire yneg_in_pckt_holding;
+    reg yneg_in_is_tail_reg;
+
+    always@(posedge clk) begin
+        yneg_in_is_tail_reg <= flit_yneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT && port_valid[0];
+    end
+
+    always@(posedge clk) begin
+        if(rst) begin
+            yneg_in_middle_packet <= 0;
+        end
+        if(port_valid[0]) begin
+            if(flit_yneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) begin
+                yneg_in_middle_packet <= 1;
+            end
+            else if(flit_yneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
+                yneg_in_middle_packet <= 0;
+            end
+        end
+    end
+    assign yneg_in_pckt_holding = yneg_in_middle_packet && ~yneg_in_is_tail_reg;
+
+
+    reg zneg_in_middle_packet; //a reg record whether it is in the middle of a packet transmission
+    wire zneg_in_pckt_holding;
+    reg zneg_in_is_tail_reg;
+
+    always@(posedge clk) begin
+        zneg_in_is_tail_reg <= flit_zneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT && port_valid[0];
+    end
+
+    always@(posedge clk) begin
+        if(rst) begin
+            zneg_in_middle_packet <= 0;
+        end
+        if(port_valid[0]) begin
+            if(flit_zneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) begin
+                zneg_in_middle_packet <= 1;
+            end
+            else if(flit_zneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
+                zneg_in_middle_packet <= 0;
+            end
+        end
+    end
+    assign zneg_in_pckt_holding = zneg_in_middle_packet && ~zneg_in_is_tail_reg;
+
+
 
 
     // associate VCs to input ports
@@ -431,7 +572,12 @@ module VC_allocator
             end     
         end
         else begin
-            grant_xpos = 0;
+            if(xpos_in_pckt_holding) begin
+                grant_xpos = pre_grant_xpos;
+            end
+            else begin
+                grant_xpos = 0;
+            end
         end
     end
 
@@ -448,7 +594,12 @@ module VC_allocator
             end     
         end
         else begin
-            grant_ypos = 0;
+            if(ypos_in_pckt_holding) begin
+                grant_ypos = pre_grant_ypos;
+            end
+            else begin
+                grant_ypos = 0;
+            end
         end
     end
 
@@ -465,7 +616,12 @@ module VC_allocator
             end     
         end
         else begin
-            grant_zpos = 0;
+            if(zpos_in_pckt_holding) begin
+                grant_zpos = pre_grant_zpos;
+            end
+            else begin
+                grant_zpos = 0;
+            end
         end
     end
 
@@ -482,7 +638,12 @@ module VC_allocator
             end     
         end
         else begin
-            grant_xneg = 0;
+            if(xneg_in_pckt_holding) begin
+                grant_xneg = pre_grant_xneg;
+            end
+            else begin
+                grant_xneg = 0;
+            end
         end
     end
 
@@ -499,7 +660,12 @@ module VC_allocator
             end     
         end
         else begin
-            grant_yneg = 0;
+            if(yneg_in_pckt_holding) begin
+                grant_yneg = pre_grant_yneg;
+            end
+            else begin
+                grant_yneg = 0;
+            end
         end
     end
 
@@ -516,7 +682,12 @@ module VC_allocator
             end     
         end
         else begin
-            grant_zneg = 0;
+            if(zneg_in_pckt_holding) begin
+                grant_zneg = pre_grant_zneg;
+            end
+            else begin
+                grant_zneg = 0;
+            end
         end
     end
 
