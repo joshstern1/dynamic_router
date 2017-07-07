@@ -94,7 +94,14 @@ module buffer
     reg[buffer_depth-1:0] head;
 	reg[buffer_depth-1:0] tail;
 
-	reg[buffer_width-1:0] fifo[buffer_depth:0];  
+	reg[buffer_width-1:0] fifo[buffer_depth:0]; 
+
+    initial begin
+        integer i;
+        for(i = 0; i <= buffer_depth; i = i + 1) begin
+            fifo[i] = 0;
+        end
+    end
 
 
     assign empty = (head == tail);

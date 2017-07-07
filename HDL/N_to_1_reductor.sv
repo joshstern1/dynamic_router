@@ -82,12 +82,17 @@ module N_to_1_reductor#(
     
 
     always_comb begin
-        max = in_slot[0][CMP_POS : CMP_POS - CMP_LEN + 1];
+        max = 0;
         selector = 0; 
-        for(index = 0; index < N; index = index + 1) begin
-            if(in_slot[index][CMP_POS : CMP_POS - CMP_LEN + 1] > max && slot_is_head[index] && ~occupy) begin
-                selector = index;
-                max = in_slot[index][CMP_POS : CMP_POS - CMP_LEN + 1];
+        if(occupy) begin
+            selector = pre_sel;
+        end
+        else begin
+            for(index = 0; index < N; index = index + 1) begin
+                if(in_slot[index][CMP_POS : CMP_POS - CMP_LEN + 1] > max && slot_is_head[index] && slot_valid[index]) begin
+                    selector = index;
+                    max = in_slot[index][CMP_POS : CMP_POS - CMP_LEN + 1];
+                end
             end
         end
     end
