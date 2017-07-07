@@ -759,6 +759,124 @@ module router#(
     assign ypos_avail_ST = ypos_downstream_avail && (credit_period_counter != credit_back_period - 1);
     assign xpos_avail_ST = xpos_downstream_avail && (credit_period_counter != credit_back_period - 1);
 
+   // the pass through traffic has higher priority than injection traffic. But if injection ports can only be preempted when it is not in the middle of injecting of one packet. 
+
+
+    wire ST_or_inject_xpos;
+    wire ST_or_inject_ypos;
+    wire ST_or_inject_zpos;
+    wire ST_or_inject_xneg;
+    wire ST_or_inject_yneg;
+    wire ST_or_inject_zneg;
+ 
+    reg xpos_occupy_by_thru; //the xpos is occupyied by the thru traffic
+    reg ypos_occupy_by_thru;
+    reg zpos_occupy_by_thru;
+    reg xneg_occupy_by_thru;
+    reg yneg_occupy_by_thru;
+    reg zneg_occupy_by_thru;
+
+    reg xpos_occupy_by_inject;
+    reg ypos_occupy_by_inject;
+    reg zpos_occupy_by_inject;
+    reg xneg_occupy_by_inject;
+    reg yneg_occupy_by_inject;
+    reg zneg_occupy_by_inject;
+
+
+
+    assign ST_or_inject_xpos = flit_valid_ST[0] && (~xpos_occupy_by_inject);
+    assign ST_or_inject_ypos = flit_valid_ST[1] && (~ypos_occupy_by_inject);
+    assign ST_or_inject_zpos = flit_valid_ST[2] && (~zpos_occupy_by_inject);
+    assign ST_or_inject_xneg = flit_valid_ST[3] && (~xneg_occupy_by_inject);
+    assign ST_or_inject_yneg = flit_valid_ST[4] && (~yneg_occupy_by_inject);
+    assign ST_or_inject_zneg = flit_valid_ST[5] && (~zneg_occupy_by_inject);
+        
+    always@(posedge clk) begin
+        if(rst) begin
+            xpos_occupy_by_inject <= 0;
+
+        end
+        else if(inject_xpos_valid && ~flit_valid_ST[0] && inject_xpos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) begin
+            xpos_occupy_by_inject <= 1;
+        end
+        else if(inject_xpos_valid && inject_xpos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
+            xpos_occupy_by_inject <= 0;
+        end
+        
+    end 
+    
+    always@(posedge clk) begin
+        if(rst) begin
+            ypos_occupy_by_inject <= 0;
+
+        end
+        else if(inject_ypos_valid && ~flit_valid_ST[1] && inject_ypos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) begin
+            ypos_occupy_by_inject <= 1;
+        end
+        else if(inject_ypos_valid && inject_ypos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
+            ypos_occupy_by_inject <= 0;
+        end
+        
+    end
+ 
+    always@(posedge clk) begin
+        if(rst) begin
+            zpos_occupy_by_inject <= 0;
+
+        end
+        else if(inject_zpos_valid && ~flit_valid_ST[2] && inject_zpos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) begin
+            zpos_occupy_by_inject <= 1;
+        end
+        else if(inject_zpos_valid && inject_zpos[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
+            zpos_occupy_by_inject <= 0;
+        end
+        
+    end
+ 
+    always@(posedge clk) begin
+        if(rst) begin
+            xneg_occupy_by_inject <= 0;
+
+        end
+        else if(inject_xneg_valid && ~flit_valid_ST[3] && inject_xneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) begin
+            xneg_occupy_by_inject <= 1;
+        end
+        else if(inject_xneg_valid && inject_xneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
+            xneg_occupy_by_inject <= 0;
+        end
+        
+    end
+ 
+    always@(posedge clk) begin
+        if(rst) begin
+            yneg_occupy_by_inject <= 0;
+
+        end
+        else if(inject_yneg_valid && ~flit_valid_ST[4] && inject_yneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) begin
+            yneg_occupy_by_inject <= 1;
+        end
+        else if(inject_yneg_valid && inject_yneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
+            yneg_occupy_by_inject <= 0;
+        end
+        
+    end
+ 
+    always@(posedge clk) begin
+        if(rst) begin
+            zneg_occupy_by_inject <= 0;
+
+        end
+        else if(inject_zneg_valid && ~flit_valid_ST[5] && inject_zneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) begin
+            zneg_occupy_by_inject <= 1;
+        end
+        else if(inject_zneg_valid && inject_zneg[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT) begin
+            zneg_occupy_by_inject <= 0;
+        end
+        
+    end
+
+
     assign out_xpos_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[0] || inject_xpos_valid;
     assign out_ypos_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[1] || inject_ypos_valid;
     assign out_zpos_valid = (credit_period_counter == credit_back_period - 1) || flit_valid_ST[2] || inject_zpos_valid;
@@ -768,20 +886,21 @@ module router#(
 
 
 
-    assign out_xpos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, xpos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (flit_valid_ST[0] ? xpos_out_ST : inject_xpos);
-    assign out_ypos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, ypos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (flit_valid_ST[1] ? ypos_out_ST : inject_ypos);
-    assign out_zpos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, zpos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (flit_valid_ST[2] ? zpos_out_ST : inject_zpos);
-    assign out_xneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, xneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (flit_valid_ST[3] ? xneg_out_ST : inject_xneg);
-    assign out_yneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, yneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (flit_valid_ST[4] ? yneg_out_ST : inject_yneg);
-    assign out_zneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, zneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (flit_valid_ST[5] ? zneg_out_ST : inject_zneg);
+    assign out_xpos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, xpos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (ST_or_inject_xpos ? xpos_out_ST : inject_xpos);
+    assign out_ypos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, ypos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (ST_or_inject_ypos ? ypos_out_ST : inject_ypos);
+    assign out_zpos = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, zpos_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (ST_or_inject_zpos ? zpos_out_ST : inject_zpos);
+    assign out_xneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, xneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (ST_or_inject_xneg ? xneg_out_ST : inject_xneg);
+    assign out_yneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, yneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (ST_or_inject_yneg ? yneg_out_ST : inject_yneg);
+    assign out_zneg = (credit_period_counter == credit_back_period - 1) ? {CREDIT_FLIT, zneg_upstream_credits[FLIT_SIZE - HEADER_LEN - 1 : 0]} : (ST_or_inject_zneg ? zneg_out_ST : inject_zneg);
 
     
-    assign inject_xpos_avail = xpos_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~flit_valid_ST[0]);
-    assign inject_ypos_avail = ypos_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~flit_valid_ST[1]);
-    assign inject_zpos_avail = zpos_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~flit_valid_ST[2]);
-    assign inject_xneg_avail = xneg_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~flit_valid_ST[3]);
-    assign inject_yneg_avail = yneg_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~flit_valid_ST[4]);
-    assign inject_zneg_avail = zneg_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~flit_valid_ST[5]);
+    assign inject_xpos_avail = xpos_downstream_avail && (credit_period_counter != credit_back_period - 1) && (xpos_occupy_by_inject || (~flit_valid_ST[0]));
+    assign inject_ypos_avail = ypos_downstream_avail && (credit_period_counter != credit_back_period - 1) && (ypos_occupy_by_inject || (~flit_valid_ST[1]));
+    assign inject_zpos_avail = zpos_downstream_avail && (credit_period_counter != credit_back_period - 1) && (zpos_occupy_by_inject || (~flit_valid_ST[2]));
+    assign inject_xneg_avail = xneg_downstream_avail && (credit_period_counter != credit_back_period - 1) && (xneg_occupy_by_inject || (~flit_valid_ST[3]));
+    assign inject_yneg_avail = yneg_downstream_avail && (credit_period_counter != credit_back_period - 1) && (yneg_occupy_by_inject || (~flit_valid_ST[4]));
+    assign inject_zneg_avail = zneg_downstream_avail && (credit_period_counter != credit_back_period - 1) && (zneg_occupy_by_inject || (~flit_valid_ST[5]));
+
 
 
     
