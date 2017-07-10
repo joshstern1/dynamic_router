@@ -74,7 +74,7 @@ module N_to_1_reductor#(
         if(out_valid && ((out[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT) || (out[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == BODY_FLIT))) begin
             occupy <= 1;
         end
-        else begin
+        else if(out_valid && out[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == TAIL_FLIT && out_avail) begin
             occupy <= 0;
         end
 

@@ -181,7 +181,7 @@ module VC
 
     assign vc_full = buffer_full;
     
-    assign valid_out = ~buffer_empty;
+    assign valid_out = ~buffer_empty && (G == ACTIVE);
     
 
     

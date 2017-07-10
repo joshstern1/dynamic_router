@@ -750,18 +750,6 @@ module router#(
         end
     end
     
-    
-
-    assign zneg_avail_ST = zneg_downstream_avail && (credit_period_counter != credit_back_period - 1);
-    assign yneg_avail_ST = yneg_downstream_avail && (credit_period_counter != credit_back_period - 1);
-    assign xneg_avail_ST = xneg_downstream_avail && (credit_period_counter != credit_back_period - 1);
-    assign zpos_avail_ST = zpos_downstream_avail && (credit_period_counter != credit_back_period - 1);
-    assign ypos_avail_ST = ypos_downstream_avail && (credit_period_counter != credit_back_period - 1);
-    assign xpos_avail_ST = xpos_downstream_avail && (credit_period_counter != credit_back_period - 1);
-
-   // the pass through traffic has higher priority than injection traffic. But if injection ports can only be preempted when it is not in the middle of injecting of one packet. 
-
-
     wire ST_or_inject_xpos;
     wire ST_or_inject_ypos;
     wire ST_or_inject_zpos;
@@ -782,6 +770,18 @@ module router#(
     reg xneg_occupy_by_inject;
     reg yneg_occupy_by_inject;
     reg zneg_occupy_by_inject;
+
+
+    assign zneg_avail_ST = zneg_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~zneg_occupy_by_inject);
+    assign yneg_avail_ST = yneg_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~yneg_occupy_by_inject);
+    assign xneg_avail_ST = xneg_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~xneg_occupy_by_inject);
+    assign zpos_avail_ST = zpos_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~zpos_occupy_by_inject);
+    assign ypos_avail_ST = ypos_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~ypos_occupy_by_inject);
+    assign xpos_avail_ST = xpos_downstream_avail && (credit_period_counter != credit_back_period - 1) && (~xpos_occupy_by_inject);
+
+   // the pass through traffic has higher priority than injection traffic. But if injection ports can only be preempted when it is not in the middle of injecting of one packet. 
+
+
 
 
 

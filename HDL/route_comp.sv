@@ -184,7 +184,7 @@ module route_comp
 
 `ifdef FARTHEST_FIRST
     wire [CMP_LEN - 1 : 0] nxt_priority_field;
-    assign nxt_priority_field = flit_before_RC[CMP_POS : CMP_POS - CMP_LEN + 1] - 1;
+    assign nxt_priority_field = (flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN] == HEAD_FLIT || flit_before_RC[FLIT_SIZE - 1 : FLIT_SIZE - HEADER_LEN]) ? (flit_before_RC[CMP_POS : CMP_POS - CMP_LEN + 1] - 1) : flit_before_RC[CMP_POS : CMP_POS - CMP_LEN];
 `endif
     
 
