@@ -3,7 +3,7 @@
 parameter FLIT_SIZE=128;
 parameter PHIT_SIZE=256;
 parameter IN_Q_SIZE=512;
-parameter VC_SIZE=4;
+parameter VC_SIZE=16;
 parameter VC_NUM=9;
 parameter XSIZE=4'd4;  //the number of nodes in x dimension
 parameter YSIZE=4'd4;  //the number of nodes in y dimension
