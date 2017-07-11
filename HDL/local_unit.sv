@@ -1,8 +1,10 @@
 
 `include "para.sv"
 //`define NEAREST_NEIGHBOR
-`define TORUS_LOOP_TEST
+//`define TORUS_LOOP_TEST
 //`define THREE_HOP_DIAGONAL
+//`define X_Y_CORNER_TURN
+`define BOARD_TEST // board test is in a 2x2x1 torus, no traffic should be sent on z dimension
 module local_unit#(
     parameter cur_x = 3'd0,
     parameter cur_y = 3'd0,
@@ -562,6 +564,11 @@ module local_unit#(
     assign all_pckts_rcvd = (xpos_pckt_counter + ypos_pckt_counter + zpos_pckt_counter + xneg_pckt_counter + yneg_pckt_counter + zneg_pckt_counter == packet_num * 6); 
 `endif
 
+`ifdef BOARD_TEST
+    assign all_pckts_rcvd = (xpos_pckt_counter + ypos_pckt_counter + xneg_pckt_counter + yneg_pckt_counter == packet_num * 3); 
+
+`endif
+
     always@(posedge clk) begin
         if(rst) begin
             packet_counter <= 0;
@@ -648,6 +655,55 @@ module local_unit#(
 //the injection port selection should make sure the turn rules to prevent deadlock
 //
 //
+//
+`ifdef BOARD_TEST
+    always@(*) begin
+        if(packet_size == 1) begin
+            app_xpos_inject = {SINGLE_FLIT, 1'b0, cur_z, cur_y, nxt_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hBEAD};
+        end
+        else if(flit_counter == 1) begin
+            app_xpos_inject = {HEAD_FLIT, 1'b0, cur_z, cur_y, nxt_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hBEAD};
+        end
+        else if(flit_counter == packet_size) begin
+            app_xpos_inject = {TAIL_FLIT, 125'hBA11};
+        end
+        else begin
+            app_xpos_inject = {BODY_FLIT, 125'hBEEF};
+        end    
+    end
+
+    always@(*) begin
+       if(packet_size == 1) begin
+            app_ypos_inject = {SINGLE_FLIT, 1'b0, cur_z, nxt_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hCEAD};
+        end
+        else if(flit_counter == 1) begin
+            app_ypos_inject = {HEAD_FLIT, 1'b0, cur_z, nxt_y, cur_x, 4'd1, cur_z, cur_y, cur_x, packet_counter, 86'hCEAD};
+        end
+        else if(flit_counter == packet_size) begin
+            app_ypos_inject = {TAIL_FLIT, 125'hCA11};
+        end
+        else begin
+            app_ypos_inject = {BODY_FLIT, 125'hCEEF};
+        end
+    end  
+    
+    always@(*) begin
+       if(packet_size == 1) begin
+            app_xneg_inject = {SINGLE_FLIT, 1'b1, cur_z, nxt_y, nxt_x, 4'd2, cur_z, cur_y, cur_x, packet_counter, 86'hDEAD};
+        end
+        else if(flit_counter == 1) begin
+            app_xneg_inject = {HEAD_FLIT, 1'b1, cur_z, nxt_y, nxt_x, 4'd2, cur_z, cur_y, cur_x, packet_counter, 86'hDEAD};
+        end
+        else if(flit_counter == packet_size) begin
+            app_xneg_inject = {TAIL_FLIT, 125'hDA11};
+        end
+        else begin
+            app_xneg_inject = {BODY_FLIT, 125'hDEEF};
+        end
+    end 
+
+`endif
+
 `ifdef TORUS_LOOP_TEST
     always@(*) begin
        if(packet_size == 1) begin

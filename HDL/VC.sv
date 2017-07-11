@@ -156,7 +156,7 @@ module VC
 
     buffer#(
         .buffer_width(FLIT_SIZE + ROUTE_LEN),
-        .buffer_depth(16)
+        .buffer_depth(VC_SIZE)
     )VC_buffer(
         .clk        (clk),
         .rst        (rst),

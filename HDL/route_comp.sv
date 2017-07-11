@@ -7,7 +7,19 @@
 //
 //the |cmp| field will be the priority field for the switch allocation
 //if the SA policy is farthest first, this will be the distance from the destination node to the current node, if the SA policy is the oldest first, this will be the time stamp when this packet is sent
+//in order to prevent deadlock, there are 6 turns should be forbidden if it is not xyz routing
+//zneg -> xpos
+//zneg -> xneg
+//zneg -> ypos
+//zneg -> yneg
+//yneg -> xpos
+//yneg -> xneg
 `define FARTHEST_FIRST
+//`define OLDEST_FIRST
+
+
+`define DOR_XYZ
+`define 
 module route_comp
 #(
     parameter cur_x = 0,
@@ -212,7 +224,7 @@ module route_comp
 
 
 
-
+`ifdef DOR_XYZ
     //for simplicity start with xyz routing first
     always@(*) begin
         if(cur_x != dst_x) begin
@@ -273,5 +285,6 @@ module route_comp
             dir = DIR_EJECT;
         end
     end
+`endif
 endmodule
         
