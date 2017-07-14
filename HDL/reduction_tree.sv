@@ -33,7 +33,7 @@ module reduction_tree#(
 
     generate
         for(i = 0; i < L1_N; i = i + 1) begin: L1_reductors
-            N_to_1_reductor#(
+            N_to_1_reductor_optimized#(
                 .N(L1_W)
             )level1(
                 .clk(clk),
@@ -65,7 +65,7 @@ module reduction_tree#(
 	 
     generate
         for(i = 0; i < L2_N; i = i + 1) begin: L2_reductors
-            N_to_1_reductor#(
+            N_to_1_reductor_optimized#(
                 .N(L2_W)
             )L2_reductor(
                 .clk(clk),
@@ -96,7 +96,7 @@ module reduction_tree#(
     
     generate
         for(i = 0; i < L3_N; i = i + 1) begin: L3_reductors
-            N_to_1_reductor#(
+            N_to_1_reductor_optimized#(
                 .N(L3_W)
             )L3_reductor(
                 .clk(clk),
@@ -119,7 +119,7 @@ module reduction_tree#(
 	endgenerate
             
 		
-    N_to_1_reductor#(
+    N_to_1_reductor_optimized#(
         .N(L4_W)
     )L4_reductor(
         .clk(clk),

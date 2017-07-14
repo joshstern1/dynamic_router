@@ -155,6 +155,7 @@ module VC
     wire [FLIT_SIZE + ROUTE_LEN - 1 : 0] buffer_out;
 
     buffer#(
+        .buffer_depth_log(4),
         .buffer_width(FLIT_SIZE + ROUTE_LEN),
         .buffer_depth(VC_SIZE)
     )VC_buffer(

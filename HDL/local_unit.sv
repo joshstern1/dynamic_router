@@ -48,7 +48,7 @@ module local_unit#(
 
     parameter injection_rate=10'd0; //injection rate means inject one packet per injection_rate cycles
 
-    parameter packet_size = 16; //number of flits in one packet
+    parameter packet_size = 1; //number of flits in one packet
     
     parameter packet_num = 100;
 

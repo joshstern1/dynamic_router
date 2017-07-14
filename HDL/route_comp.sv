@@ -19,7 +19,6 @@
 
 
 `define DOR_XYZ
-`define 
 module route_comp
 #(
     parameter cur_x = 0,
