@@ -4,9 +4,10 @@
 //Start date: Feb 10th 2015
 //
 //`define SIM
-//`define SYNTH
+`define SYNTH
 module buffer
 #(
+    parameter buffer_depth_log = 2,
     parameter buffer_depth=8,
     parameter buffer_width=64
 )(
@@ -78,7 +79,7 @@ module buffer
 		scfifo_component.lpm_showahead = "ON",
 		scfifo_component.lpm_type = "scfifo",
 		scfifo_component.lpm_width = buffer_width,
-		scfifo_component.lpm_widthu = 2,
+		scfifo_component.lpm_widthu = buffer_depth_log,
 		scfifo_component.overflow_checking = "ON",
 		scfifo_component.underflow_checking = "ON",
 		scfifo_component.use_eab = "ON";           
@@ -94,7 +95,14 @@ module buffer
     reg[buffer_depth-1:0] head;
 	reg[buffer_depth-1:0] tail;
 
-	reg[buffer_width-1:0] fifo[buffer_depth:0];  
+	reg[buffer_width-1:0] fifo[buffer_depth:0]; 
+
+    initial begin
+        integer i;
+        for(i = 0; i <= buffer_depth; i = i + 1) begin
+            fifo[i] = 0;
+        end
+    end
 
 
     assign empty = (head == tail);
@@ -108,7 +116,8 @@ module buffer
     end
 
     always@(posedge clk) begin
-        fifo[tail] <= in;
+        if(produce)
+            fifo[tail] <= in;
     end
 
 
@@ -132,14 +141,17 @@ module buffer
         end
     end
 
+
+    reg [buffer_width - 1 : 0] usedw_reg;
     always@(*) begin
         if(tail >= head) begin
-            usedw = tail - head;
+            usedw_reg = tail - head;
         end
         else begin
-            usedw = buffer_depth - head + tail;
+            usedw_reg = buffer_depth - head + tail;
         end
     end
+    assign usedw = usedw_reg;
 
 `endif
 

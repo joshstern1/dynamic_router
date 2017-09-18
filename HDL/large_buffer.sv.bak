@@ -4,7 +4,7 @@
 //Start date: Feb 10th 2015
 //
 //`define SIM
-//`define SYNTH
+`define SYNTH
 module large_buffer
 #(
     parameter buffer_depth=8,
@@ -95,7 +95,13 @@ module large_buffer
 	reg[buffer_depth-1:0] tail;
 
 	reg[buffer_width-1:0] fifo[buffer_depth:0];  
-
+ 
+    initial begin
+        integer i;
+        for(i = 0; i <= buffer_depth; i = i + 1) begin
+            fifo[i] = 0;
+        end
+    end
 
     assign empty = (head == tail);
 	assign full = (tail == buffer_depth - 1) ? (head == 0) : (head == tail + 1);
@@ -108,7 +114,8 @@ module large_buffer
     end
 
     always@(posedge clk) begin
-        fifo[tail] <= in;
+        if(produce)
+            fifo[tail] <= in;
     end
 
 
@@ -133,6 +140,7 @@ module large_buffer
     end
 
     reg [buffer_width - 1 : 0] usedw_reg;
+    assign usedw = usedw_reg;
     always@(*) begin
         if(tail >= head) begin
             usedw_reg = tail - head;

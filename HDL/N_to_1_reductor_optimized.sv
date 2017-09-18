@@ -35,8 +35,8 @@ module N_to_1_reductor_optimized#(
     generate 
         for(i = 0; i < N; i = i + 1) begin: in_Q
             buffer#(
-                .buffer_depth_log(2),
-                .buffer_depth(4),
+                .buffer_depth_log(1),
+                .buffer_depth(2),
                 .buffer_width(FLIT_SIZE)
             )in_Q_inst(
                 .clk(clk),
@@ -153,8 +153,12 @@ module N_to_1_reductor_optimized#(
                         end
                     end
                 end
-            end  
+            end
+            
+        
+        
         endcase
+        
     endgenerate
     
 
